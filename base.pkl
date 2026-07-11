@@ -1,0 +1,37 @@
+import "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Builtins.pkl"
+
+/// The lowest-common-denominator step set shared by every hugoh repo's
+/// `hk.pkl`: the same key/value pairs, active and unmodified, across all of
+/// them. Repo-specific overrides (excludes, custom commands, etc.) are
+/// applied locally after spreading this in, e.g.:
+///
+/// ```
+/// import "package://github.com/hugoh/hk-config/releases/download/v0.1.0/hk-config@0.1.0#/base.pkl" as Base
+///
+/// local linters = new Mapping<String, Step> {
+///     ...Base.base
+///     ["trailing-ws"] = (Builtins.trailing_whitespace) {
+///         exclude = List("some/generated/dir/**")
+///     }
+/// }
+/// ```
+base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
+    ["actionlint"] = Builtins.actionlint
+    ["pinact"] = Builtins.pinact
+    ["conflicts"] = Builtins.check_merge_conflict
+    ["trailing-ws"] = Builtins.trailing_whitespace
+    ["line-endings"] = Builtins.mixed_line_ending
+    ["newlines"] = Builtins.newlines
+    ["case-conflict"] = Builtins.check_case_conflict
+    ["large-files"] = Builtins.check_added_large_files
+    ["executables"] = Builtins.check_executables_have_shebangs
+    ["symlinks"] = Builtins.check_symlinks
+    ["gitleaks"] = Builtins.gitleaks
+    ["ghalint"] = Builtins.ghalint_workflow
+    ["markdown"] = Builtins.rumdl
+    ["dprint"] = Builtins.dprint
+    ["zizmor"] = Builtins.zizmor
+    ["typos"] = Builtins.typos
+    ["mise"] = Builtins.mise
+}

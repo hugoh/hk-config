@@ -1,0 +1,54 @@
+name: release
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: false
+
+      - if: steps.tag_version.outputs.new_tag != ''
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: false
+
+      - name: Package Pkl
+        if: steps.tag_version.outputs.new_tag != ''
+        env:
+          VERSION: ${{ steps.tag_version.outputs.new_version }}
+        run: pkl project package --output-path dist
+
+      - name: Create a GitHub release with package assets
+        if: steps.tag_version.outputs.new_tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_TAG: ${{ steps.tag_version.outputs.new_tag }}
+          CHANGELOG: ${{ steps.tag_version.outputs.changelog }}
+        run: |
+          gh release create "$NEW_TAG" \
+            --verify-tag \
+            --title "Release $NEW_TAG" \
+            --notes "$CHANGELOG" \
+            dist/*

@@ -1,0 +1,47 @@
+amends "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Builtins.pkl"
+// A local, same-directory import — not the published package:// URL, which
+// doesn't exist until a release is cut. This just reads base.pkl straight
+// off disk, so there's no bootstrapping problem.
+import "base.pkl" as Base
+
+local linters = new Mapping<String, Step> {
+    ...Base.base
+    // hk validate only type-checks hk.pkl itself against hk's schema; it
+    // doesn't touch the pkl modules this repo actually publishes. This
+    // actually builds the package (evaluating base.pkl, verifying
+    // PklProject metadata, resolving local imports) — the same thing the
+    // release workflow does, just without publishing. Trivially fast for a
+    // project this size, so it runs on every commit, not just in CI.
+    //
+    // Deliberately not also `pkl eval`-ing hk.pkl itself: hk runs on its own
+    // bundled Pkl evaluator (pklr), which is more permissive than the
+    // official `pkl` CLI about ad-hoc one-off steps like this one —
+    // `["key"] = { field = value }` without an explicit `new Step {}`
+    // prefix. The official `pkl` CLI rejects that syntax outright
+    // ("Unexpected token `{`. Expected `}`."), so `pkl eval`-ing any
+    // hk.pkl in this fleet fails standalone, this one included — that's why
+    // hk.pkl is excluded from the published package below, and why
+    // `hk validate` (not raw `pkl eval`) is the right tool for hk.pkl files.
+    ["pkl-package"] = {
+        check = "pkl project package --skip-publish-check --output-path .out/%{name}/%{version}"
+    }
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = linters
+    }
+    ["pre-push"] {
+        steps = linters
+    }
+    ["check"] {
+        steps = linters
+    }
+    ["fix"] {
+        fix = true
+        steps = linters
+    }
+}

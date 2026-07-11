@@ -1,0 +1,21 @@
+amends "pkl:Project"
+
+package {
+  name = "hk-config"
+  authors { "Hugo Haas <hugoh@hugoh.net>" }
+  version = read?("env:VERSION")?.replaceFirst("\(name)@", "") ?? "0.0.1-SNAPSHOT"
+  baseUri = "package://github.com/hugoh/hk-config/releases/download/v\(version)/\(name)"
+  packageZipUrl = "https://github.com/hugoh/hk-config/releases/download/v\(version)/\(name)@\(version).zip"
+  sourceCode = "https://github.com/hugoh/hk-config"
+  sourceCodeUrlScheme = "https://github.com/hugoh/hk-config/blob/v\(version)/%{path}#%{line}-%{endLine}"
+  license = "MIT"
+  description = "Shared hk.pkl building blocks for hugoh's repos"
+  // Only ship the .pkl modules meant for consumption — not this repo's own
+  // tooling config.
+  exclude {
+    "hk.pkl"
+    "dprint.json"
+    "mise.toml"
+    "README.md"
+  }
+}

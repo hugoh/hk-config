@@ -1,0 +1,5 @@
+# rumdl configuration file
+
+[MD013]
+# pkl import URLs are long and can't be wrapped; only enforce line length on prose
+code-blocks = false
