@@ -1,0 +1,52 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Bump the hugoh/hk-config Pkl package pin embedded in package:// import URLs",
+      "managerFilePatterns": ["/\\.pkl$/"],
+      "matchStrings": [
+        "package://github\\.com/hugoh/hk-config/releases/download/v[^/]+/hk-config@(?<currentValue>[^#]+)#"
+      ],
+      "datasourceTemplate": "github-tags",
+      "packageNameTemplate": "hugoh/hk-config",
+      "extractVersionTemplate": "^v(?<version>.*)$",
+      "versioningTemplate": "semver",
+      "autoReplaceStringTemplate": "package://github.com/hugoh/hk-config/releases/download/v{{{newValue}}}/hk-config@{{{newValue}}}#"
+    },
+    {
+      "customType": "regex",
+      "description": "Bump the jdx/hk pin in package:// URLs (.pkl) and mise.toml together",
+      "managerFilePatterns": ["/\\.pkl$/", "/(^|/)mise\\.toml$/"],
+      "matchStrings": [
+        "package://github\\.com/jdx/hk/releases/download/v[^/]+/hk@(?<currentValue>[^#]+)#",
+        "^hk\\s*=\\s*\"(?<currentValue>[^\"]+)\"\\s*$"
+      ],
+      "datasourceTemplate": "github-releases",
+      "packageNameTemplate": "jdx/hk",
+      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["hugoh/hk-config"],
+      "minimumReleaseAge": null,
+      "schedule": ["at any time"],
+      "groupName": "hk toolchain"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["jdx/hk"],
+      "minimumReleaseAge": null,
+      "schedule": ["at any time"],
+      "groupName": "hk toolchain"
+    },
+    {
+      "matchManagers": ["mise"],
+      "matchDepNames": ["hk"],
+      "enabled": false
+    }
+  ]
+}

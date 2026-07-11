@@ -8,9 +8,11 @@ assets themselves are the package.
 ## Usage
 
 ```pkl
-amends "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Builtins.pkl"
-import "package://github.com/hugoh/hk-config/releases/download/v0.1.0/hk-config@0.1.0#/base.pkl" as Base
+amends "package://github.com/jdx/hk/releases/download/vX.Y.Z/hk@X.Y.Z#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/vX.Y.Z/hk@X.Y.Z#/Builtins.pkl"
+import "package://github.com/hugoh/hk-config/releases/download/vA.B.C/hk-config@A.B.C#/base.pkl" as Base
+
+min_hk_version = Base.min_hk_version
 
 local linters = new Mapping<String, Step> {
     ...Base.base
@@ -20,6 +22,13 @@ local linters = new Mapping<String, Step> {
     }
 }
 ```
+
+`X.Y.Z` is the [hk release](https://github.com/jdx/hk/releases) you're pinning
+to, and `A.B.C` is the
+[hk-config release](https://github.com/hugoh/hk-config/releases) you're
+pinning to — check the latest tags rather than hardcoding an example version
+here, since these drift over time and Renovate keeps consuming repos' actual
+pins current (see `renovate.json` below).
 
 Repos with no local overrides can spread `Base.base` straight into their
 `linters` mapping with nothing else. Repos that already exclude paths,
@@ -43,6 +52,41 @@ More group files (e.g. per-language extras) may be added alongside it later —
 `base.pkl` is named for being the foundation those would build on top of, not
 because it's the only file this package will ever contain.
 
+## `min_hk_version`
+
+`base.pkl` exports `min_hk_version`, set to the same version as the
+`amends`/`import` pins above it. hk's `Config.pkl` schema enforces this at
+runtime — if the installed `hk` binary is older, `hk` panics with a clear
+"version X is less than the minimum required version Y" error instead of
+failing in some more confusing way. Because Pkl `amends` targets must be
+static, consuming repos need one extra line to actually apply it:
+`min_hk_version = Base.min_hk_version` in their own `hk.pkl` (shown above) —
+importing `base.pkl` alone doesn't merge its properties into the amending
+module.
+
+## Renovate
+
+`renovate.json` (in this repo) is where the Renovate rules for keeping the
+`jdx/hk` and `hugoh/hk-config` pins current live — not in the generic
+[`hugoh/renovate-config`](https://github.com/hugoh/renovate-config) fleet
+preset, since these rules encode this repo's own release semantics.
+`renovate-config`'s own preset extends this file, so every repo that already
+extends `renovate-config` picks these rules up transitively with no changes
+of its own. It covers:
+
+- Bumping the `hugoh/hk-config` pin in `.pkl` files (as before).
+- Bumping the `jdx/hk` pin in both `.pkl` files and `mise.toml`'s
+  `hk = "..."` entry together, grouped into a single PR
+  (`groupName: "hk toolchain"`, shared with the `hugoh/hk-config` bump above)
+  — so the Pkl schema pin and the installed CLI version don't drift apart,
+  and so an hk-config bump and the hk version bump it corresponds to land in
+  the same review.
+- Disabling Renovate's built-in `mise` manager for `hk` specifically, so it
+  doesn't also open a second, independently-timed PR for the same
+  `mise.toml` line.
+
+Checked via the `renovate-config-validator` step in `hk.pkl` on every commit/push.
+
 ## Versioning and releases
 
 Releases are automatic, same as
@@ -51,9 +95,12 @@ runs `.github/workflows/release.yml`, which uses
 [`mathieudutour/github-tag-action`](https://github.com/mathieudutour/github-tag-action)
 to inspect commits since the last tag and bump semver based on
 [Conventional Commits](https://www.conventionalcommits.org/) prefixes
-(`fix:` → patch, `feat:` → minor, `BREAKING CHANGE`/`!` → major). If nothing
-since the last tag warrants a bump, the workflow no-ops — no commit, no tag,
-no release.
+(`fix:` → patch, `feat:` → minor, `BREAKING CHANGE`/`!` → major) — note that
+`default_bump: false` means **only** those recognized prefixes cut a release;
+`chore:`/`docs:`/etc. commits are no-ops here. Bumping the `jdx/hk` pin in
+this repo must therefore be a `fix:` commit, not a `chore:` one, or no new
+release is cut for consuming repos to adopt. If nothing since the last tag
+warrants a bump, the workflow no-ops — no commit, no tag, no release.
 
 When a bump does happen, the same job packages the project with
 `pkl project package` and uploads the four resulting artifacts
