@@ -1,5 +1,8 @@
-import "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.49.0/hk@1.49.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
+
+// Keep in lockstep with the amends/import version above — bump both together.
+min_hk_version = "1.50.0"
 
 /// The lowest-common-denominator step set shared by every hugoh repo's
 /// `hk.pkl`: the same key/value pairs, active and unmodified, across all of
@@ -34,4 +37,10 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["zizmor"] = Builtins.zizmor
     ["typos"] = Builtins.typos
     ["mise"] = Builtins.mise
+    ["shellcheck"] = (Builtins.shellcheck) {
+        // hk invokes shellcheck per-file, so `-x` is needed for `source`d
+        // sibling scripts (e.g. a shared lib.sh) to resolve.
+        check = "shellcheck -x {{ files }}"
+    }
+    ["shellharden"] = Builtins.shellharden
 }

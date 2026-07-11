@@ -1,9 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>hugoh/renovate-config"],
+  "extends": ["github>hugoh/renovate-config", "renovate.json"],
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
+      "semanticCommitType": "fix"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["jdx/hk", "hugoh/hk-config"],
       "semanticCommitType": "fix"
     }
   ]
