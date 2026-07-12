@@ -37,10 +37,4 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["zizmor"] = Builtins.zizmor
     ["typos"] = Builtins.typos
     ["mise"] = Builtins.mise
-    ["shellcheck"] = (Builtins.shellcheck) {
-        // hk invokes shellcheck per-file, so `-x` is needed for `source`d
-        // sibling scripts (e.g. a shared lib.sh) to resolve.
-        check = "shellcheck -x {{ files }}"
-    }
-    ["shellharden"] = Builtins.shellharden
 }
