@@ -20,7 +20,7 @@
       "managerFilePatterns": ["/\\.pkl$/", "/(^|/)mise\\.toml$/"],
       "matchStrings": [
         "package://github\\.com/jdx/hk/releases/download/v[^/]+/hk@(?<currentValue>[^#]+)#",
-        "^hk\\s*=\\s*\"(?<currentValue>[^\"]+)\"\\s*$"
+        "(?:^|\\r\\n|\\r|\\n)hk\\s*=\\s*\"(?<currentValue>[^\"]+)\"\\s*(?:\\r\\n|\\r|\\n|$)"
       ],
       "datasourceTemplate": "github-releases",
       "packageNameTemplate": "jdx/hk",
