@@ -3,10 +3,6 @@
   "extends": ["github>hugoh/renovate-config", "local>hugoh/hk-config//renovate"],
   "packageRules": [
     {
-      "matchManagers": ["github-actions"],
-      "semanticCommitType": "fix"
-    },
-    {
       "matchManagers": ["custom.regex"],
       "matchPackageNames": ["jdx/hk", "hugoh/hk-config"],
       "semanticCommitType": "fix"
