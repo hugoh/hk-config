@@ -38,6 +38,7 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["typos"] = Builtins.typos
     ["mise"] = Builtins.mise
     ["toml"] = Builtins.tombi
+    ["toml-format"] = Builtins.tombi_format
     ["yaml"] = Builtins.ryl
 }
 
