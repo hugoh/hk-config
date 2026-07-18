@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>hugoh/renovate-config", "renovate.json"],
+  "extends": ["github>hugoh/renovate-config", "local>hugoh/hk-config//renovate"],
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
