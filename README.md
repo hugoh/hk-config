@@ -45,8 +45,16 @@ it's just reading a sibling file off disk).
 The lowest-common-denominator step set found active, unmodified, across every
 hugoh repo's `hk.pkl` `Common` group: `actionlint`, `pinact`, `conflicts`,
 `trailing-ws`, `line-endings`, `newlines`, `case-conflict`, `large-files`,
-`executables`, `symlinks`, `gitleaks`, `ghalint`, `markdown` (rumdl), `dprint`,
-`zizmor`, `typos`, `mise`.
+`executables`, `symlinks`, `gitleaks`, `ghalint`, `markdown` (rumdl), `biome`,
+`zizmor`, `typos`, `mise`, `toml` (tombi), `yaml` (ryl).
+
+`biome` covers JSON as well as JS/TS/JSX — that's why `dprint` (previously
+the only JSON formatter in the shared set) was dropped: dprint's `json` and
+`biome` plugins were doing overlapping, redundant work on the same files, and
+a native binary (biome) is lighter than dprint's WASM plugin pipeline. Repos
+that still need markdown/toml/yaml/JSON formatting beyond what
+rumdl/tombi/ryl/biome already lint get that from those dedicated steps now,
+not from a separate dprint config.
 
 More group files (e.g. per-language extras) may be added alongside it later —
 `base.pkl` is named for being the foundation those would build on top of, not

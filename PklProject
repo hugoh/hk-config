@@ -14,7 +14,7 @@ package {
   // tooling config.
   exclude {
     "hk.pkl"
-    "dprint.json"
+    "biome.json"
     "mise.toml"
     "README.md"
   }

@@ -33,7 +33,7 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["gitleaks"] = Builtins.gitleaks
     ["ghalint"] = Builtins.ghalint_workflow
     ["markdown"] = Builtins.rumdl
-    ["dprint"] = Builtins.dprint
+    ["biome"] = Builtins.biome
     ["zizmor"] = Builtins.zizmor
     ["typos"] = Builtins.typos
     ["mise"] = Builtins.mise
@@ -59,11 +59,10 @@ shell: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["shfmt"] = Builtins.shfmt
 }
 
-/// Cloudflare Workers / web repos: biome. tsc and other repo-specific
-/// checks vary too much (TS vs. plain JS) to belong in the shared group.
-web: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
-    ["biome"] = Builtins.biome
-}
+/// Deprecated: biome moved into `base` (it now also covers JSON, replacing
+/// dprint). Kept as an empty group so repos still spreading `...Base.web`
+/// don't break; drop that spread next time you touch those repos' `hk.pkl`.
+web: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {}
 
 /// Lua repos (Hammerspoon Spoons, dotfiles): luacheck + stylua.
 lua: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
