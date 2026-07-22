@@ -40,6 +40,11 @@ hooks {
         stash = "git"
         steps = linters
     }
+    ["commit-msg"] {
+        steps = new Mapping<String, Step> {
+            ["check_conventional_commit"] = Builtins.check_conventional_commit
+        }
+    }
     ["pre-push"] {
         steps = linters
     }
