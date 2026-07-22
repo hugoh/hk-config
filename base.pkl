@@ -50,6 +50,7 @@ python: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["ruff"] = Builtins.ruff
     ["ruff_format"] = Builtins.ruff_format
     ["ty"] = Builtins.ty
+    ["check_conventional_commit"] = Builtins.check_conventional_commit
 }
 
 /// Shell script repos: shellcheck, shellharden, shfmt. Deliberately doesn't
