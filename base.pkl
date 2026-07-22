@@ -1,8 +1,8 @@
-import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.52.0/hk@1.52.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.52.0/hk@1.52.0#/Builtins.pkl"
 
 // Keep in lockstep with the amends/import version above — bump both together.
-min_hk_version = "1.50.0"
+min_hk_version = "1.52.0"
 
 /// The lowest-common-denominator step set shared by every hugoh repo's
 /// `hk.pkl`: the same key/value pairs, active and unmodified, across all of
@@ -14,7 +14,7 @@ min_hk_version = "1.50.0"
 ///
 /// local linters = new Mapping<String, Step> {
 ///     ...Base.base
-///     ["trailing-ws"] = (Builtins.trailing_whitespace) {
+///     ["trailing_whitespace"] = (Builtins.trailing_whitespace) {
 ///         exclude = List("some/generated/dir/**")
 ///     }
 /// }
@@ -22,24 +22,25 @@ min_hk_version = "1.50.0"
 base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["actionlint"] = Builtins.actionlint
     ["pinact"] = Builtins.pinact
-    ["conflicts"] = Builtins.check_merge_conflict
-    ["trailing-ws"] = Builtins.trailing_whitespace
-    ["line-endings"] = Builtins.mixed_line_ending
+    ["check_merge_conflict"] = Builtins.check_merge_conflict
+    ["trailing_whitespace"] = Builtins.trailing_whitespace
+    ["mixed_line_ending"] = Builtins.mixed_line_ending
     ["newlines"] = Builtins.newlines
-    ["case-conflict"] = Builtins.check_case_conflict
-    ["large-files"] = Builtins.check_added_large_files
-    ["executables"] = Builtins.check_executables_have_shebangs
-    ["symlinks"] = Builtins.check_symlinks
+    ["check_case_conflict"] = Builtins.check_case_conflict
+    ["check_added_large_files"] = Builtins.check_added_large_files
+    ["check_executables_have_shebangs"] = Builtins.check_executables_have_shebangs
+    ["check_symlinks"] = Builtins.check_symlinks
     ["gitleaks"] = Builtins.gitleaks
-    ["ghalint"] = Builtins.ghalint_workflow
-    ["markdown"] = Builtins.rumdl
+    ["ghalint_workflow"] = Builtins.ghalint_workflow
+    ["rumdl"] = Builtins.rumdl
+    ["rumdl_format"] = Builtins.rumdl_format
     ["biome"] = Builtins.biome
     ["zizmor"] = Builtins.zizmor
     ["typos"] = Builtins.typos
     ["mise"] = Builtins.mise
-    ["toml"] = Builtins.tombi
-    ["toml-format"] = Builtins.tombi_format
-    ["yaml"] = Builtins.ryl
+    ["tombi"] = Builtins.tombi
+    ["tombi_format"] = Builtins.tombi_format
+    ["ryl"] = Builtins.ryl
 }
 
 /// Python repos: ruff (lint + format) and ty (type checking). Spread this in
@@ -47,8 +48,9 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
 /// commands (e.g. running via `uv run` instead of a PATH binary).
 python: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["ruff"] = Builtins.ruff
-    ["ruff-format"] = Builtins.ruff_format
+    ["ruff_format"] = Builtins.ruff_format
     ["ty"] = Builtins.ty
+    ["check_conventional_commit"] = Builtins.check_conventional_commit
 }
 
 /// Shell script repos: shellcheck, shellharden, shfmt. Deliberately doesn't
@@ -67,6 +69,6 @@ web: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {}
 
 /// Lua repos (Hammerspoon Spoons, dotfiles): luacheck + stylua.
 lua: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
-    ["lua"] = Builtins.luacheck
+    ["luacheck"] = Builtins.luacheck
     ["stylua"] = Builtins.stylua
 }
