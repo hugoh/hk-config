@@ -17,7 +17,7 @@ min_hk_version = Base.min_hk_version
 local linters = new Mapping<String, Step> {
     ...Base.base
     // repo-specific overrides and additions go here, same as before
-    ["trailing-ws"] = (Builtins.trailing_whitespace) {
+    ["trailing_whitespace"] = (Builtins.trailing_whitespace) {
         exclude = List("some/generated/dir/**")
     }
 }
@@ -43,10 +43,13 @@ it's just reading a sibling file off disk).
 ## What's in `base.pkl`
 
 The lowest-common-denominator step set found active, unmodified, across every
-hugoh repo's `hk.pkl` `Common` group: `actionlint`, `pinact`, `conflicts`,
-`trailing-ws`, `line-endings`, `newlines`, `case-conflict`, `large-files`,
-`executables`, `symlinks`, `gitleaks`, `ghalint`, `markdown` (rumdl), `biome`,
-`zizmor`, `typos`, `mise`, `toml` (tombi), `yaml` (ryl).
+hugoh repo's `hk.pkl` `Common` group: `actionlint`, `pinact`,
+`check_merge_conflict`, `trailing_whitespace`, `mixed_line_ending`,
+`newlines`, `check_case_conflict`, `check_added_large_files`,
+`check_executables_have_shebangs`, `check_symlinks`, `gitleaks`,
+`ghalint_workflow`, `rumdl`, `rumdl_format`, `biome`, `zizmor`, `typos`,
+`mise`, `tombi`, `tombi_format`, `ryl`. Keys match the `Builtins` identifier
+they map to, so the step name always tells you which builtin is running.
 
 `biome` covers JSON as well as JS/TS/JSX — that's why `dprint` (previously
 the only JSON formatter in the shared set) was dropped: dprint's `json` and
