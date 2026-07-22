@@ -50,7 +50,6 @@ python: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["ruff"] = Builtins.ruff
     ["ruff_format"] = Builtins.ruff_format
     ["ty"] = Builtins.ty
-    ["check_conventional_commit"] = Builtins.check_conventional_commit
 }
 
 /// Shell script repos: shellcheck, shellharden, shfmt. Deliberately doesn't
@@ -71,4 +70,12 @@ web: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {}
 lua: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["luacheck"] = Builtins.luacheck
     ["stylua"] = Builtins.stylua
+}
+
+/// Conventional Commit message linting. Needs `commit_msg_file`, which only
+/// exists in a `commit-msg` hook — spread this into that hook's own steps,
+/// never into `linters` (used by check/pre-commit/pre-push/fix), or the step
+/// fails with "Variable `commit_msg_file` is not defined".
+commit_msg: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
+    ["check_conventional_commit"] = Builtins.check_conventional_commit
 }
