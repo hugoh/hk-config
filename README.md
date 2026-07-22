@@ -63,6 +63,13 @@ More group files (e.g. per-language extras) may be added alongside it later —
 `base.pkl` is named for being the foundation those would build on top of, not
 because it's the only file this package will ever contain.
 
+`commit_msg` (`check_conventional_commit`) is separate from `base`/`python`/
+`shell`/`lua`: it needs `commit_msg_file`, which only exists inside a
+`commit-msg` hook, so spread it into that hook's `steps` specifically —
+spreading it into the shared `linters` mapping used by
+check/pre-commit/pre-push/fix fails with "Variable `commit_msg_file` is not
+defined".
+
 ## `min_hk_version`
 
 `base.pkl` exports `min_hk_version`, set to the same version as the

@@ -41,9 +41,7 @@ hooks {
         steps = linters
     }
     ["commit-msg"] {
-        steps = new Mapping<String, Step> {
-            ["check_conventional_commit"] = Builtins.check_conventional_commit
-        }
+        steps = Base.commit_msg
     }
     ["pre-push"] {
         steps = linters
