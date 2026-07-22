@@ -1,8 +1,8 @@
-import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.52.0/hk@1.52.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.52.0/hk@1.52.0#/Builtins.pkl"
 
 // Keep in lockstep with the amends/import version above — bump both together.
-min_hk_version = "1.50.0"
+min_hk_version = "1.52.0"
 
 /// The lowest-common-denominator step set shared by every hugoh repo's
 /// `hk.pkl`: the same key/value pairs, active and unmodified, across all of
@@ -33,6 +33,7 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["gitleaks"] = Builtins.gitleaks
     ["ghalint"] = Builtins.ghalint_workflow
     ["markdown"] = Builtins.rumdl
+    ["rumdl_format"] = Builtins.rumdl_format
     ["biome"] = Builtins.biome
     ["zizmor"] = Builtins.zizmor
     ["typos"] = Builtins.typos
