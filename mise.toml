@@ -1,6 +1,8 @@
 [tools]
 hk = "1.52.0"
-"npm:renovate" = "43.260.0"
+"npm:renovate" = { version = "latest", trust_policy_excludes = [
+  "@yarnpkg/libzip@3.2.2",
+] }
 pkl = "0.32.0"
 actionlint = "1.7.12"
 pinact = "4.1.0"
