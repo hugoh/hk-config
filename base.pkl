@@ -10,7 +10,7 @@ min_hk_version = "1.52.0"
 /// applied locally after spreading this in, e.g.:
 ///
 /// ```
-/// import "package://github.com/hugoh/hk-config/releases/download/v1.2.0/hk-config@1.2.0#/base.pkl" as Base
+/// import "package://github.com/hugoh/hk-config/releases/download/v1.2.1/hk-config@1.2.1#/base.pkl" as Base
 ///
 /// local linters = new Mapping<String, Step> {
 ///     ...Base.base
