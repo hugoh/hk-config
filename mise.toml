@@ -1,5 +1,5 @@
 [tools]
-hk = "1.52.0"
+hk = "1.53.0"
 "npm:renovate" = { version = "latest", trust_policy_excludes = [
   "@yarnpkg/libzip@3.2.2",
 ] }
