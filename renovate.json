@@ -32,15 +32,13 @@
     {
       "matchManagers": ["custom.regex"],
       "matchPackageNames": ["hugoh/hk-config"],
-      "minimumReleaseAge": null,
-      "schedule": ["at any time"],
+      "extends": ["github>hugoh/renovate-config//presets/chain-debounce"],
       "groupName": "hk toolchain"
     },
     {
       "matchManagers": ["custom.regex"],
       "matchPackageNames": ["jdx/hk"],
-      "minimumReleaseAge": null,
-      "schedule": ["at any time"],
+      "extends": ["github>hugoh/renovate-config//presets/chain-debounce"],
       "groupName": "hk toolchain"
     },
     {
