@@ -1,6 +1,6 @@
 [tools]
 hk = "1.54.0"
-"npm:renovate" = { version = "latest", trust_policy_excludes = [
+"npm:renovate" = { version = "44.5.3", trust_policy_excludes = [
   "@yarnpkg/libzip@3.2.2",
 ] }
 pkl = "0.32.1"
