@@ -72,6 +72,26 @@ lua: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["stylua"] = Builtins.stylua
 }
 
+/// Renovate config linting: validates `.renovaterc.json` with
+/// `renovate-config-validator`. Only meaningful for repos that ship Renovate
+/// config, so — unlike `base` — this isn't spread into every repo
+/// automatically; opt in explicitly. Repos that also export their own preset
+/// files (e.g. `default.json`, `presets/*.json`) override the `glob` on this
+/// key after spreading it in, the same way `go-tools`' `hk.pkl` overrides
+/// `shellcheck_dev_tasks`'s `match_any`:
+///
+/// ```
+/// ["renovate_config_validator"] = (Base.renovate["renovate_config_validator"]) {
+///     glob = List("default.json", ".renovaterc.json", "presets/*.json")
+/// }
+/// ```
+renovate: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
+    ["renovate_config_validator"] = new Config.Step {
+        glob = List(".renovaterc.json")
+        check = "renovate-config-validator --strict --no-global {{files}}"
+    }
+}
+
 /// Conventional Commit message linting. Needs `commit_msg_file`, which only
 /// exists in a `commit-msg` hook — spread this into that hook's own steps,
 /// never into `linters` (used by check/pre-commit/pre-push/fix), or the step
