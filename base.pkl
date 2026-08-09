@@ -92,6 +92,31 @@ renovate: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     }
 }
 
+/// Checkly monitoring-as-code validation: `checkly deploy --preview` is the
+/// closest thing to an offline `checkly validate` (there isn't one) — it
+/// still needs network access and `CHECKLY_API_KEY`/`CHECKLY_ACCOUNT_ID`, so
+/// like `renovate` this isn't spread into every repo automatically; opt in
+/// explicitly, and only into hooks where that's acceptable (`pre-push`,
+/// `check`, `fix` — never `pre-commit`, which shouldn't depend on network +
+/// credentials being available):
+///
+/// ```
+/// local linters = new Mapping<String, Step> { ...Base.base }
+/// local pushChecks = new Mapping<String, Step> { ...linters ...Base.checkly }
+/// hooks {
+///     ["pre-commit"] { fix = true; stash = "git"; steps = linters }
+///     ["pre-push"] { steps = pushChecks }
+///     ["fix"] { fix = true; steps = linters }
+///     ["check"] { steps = pushChecks }
+/// }
+/// ```
+checkly: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
+    ["checkly_preview"] = new Config.Step {
+        glob = List("checkly.config.ts", "__checks__/**")
+        check = "bunx checkly deploy --preview"
+    }
+}
+
 /// Conventional Commit message linting. Needs `commit_msg_file`, which only
 /// exists in a `commit-msg` hook — spread this into that hook's own steps,
 /// never into `linters` (used by check/pre-commit/pre-push/fix), or the step
