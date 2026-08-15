@@ -1,7 +1,9 @@
 [tools]
-hk = "1.54.0"
-"npm:renovate" = { version = "44.14.3", trust_policy_excludes = [
+hk = "1.55.0"
+"npm:renovate" = { version = "44.30.0", trust_policy_excludes = [
   "@yarnpkg/libzip@3.2.2",
+  "@smithy/core@3.33.0",
+  "@smithy/node-http-handler@4.11.0",
 ] }
 pkl = "0.32.1"
 actionlint = "1.7.12"
@@ -9,8 +11,8 @@ pinact = "4.1.1"
 zizmor = "1.29.0"
 ghalint = "1.5.6"
 gitleaks = "8.30.1"
-biome = "2.5.4"
+biome = "2.5.8"
 typos = "1.49.0"
-rumdl = "0.2.52"
-tombi = "1.2.7"
+rumdl = "0.2.55"
+tombi = "1.4.0"
 "github:owenlamont/ryl" = "0.21.0"
