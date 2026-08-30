@@ -33,7 +33,7 @@ pins current (see `renovate.json` below).
 Repos with no local overrides can spread `Base.base` straight into their
 `linters` mapping with nothing else. Repos that already exclude paths,
 swap a command, or add extra steps keep doing that exactly as they do
-today — only the boilerplate step _definitions_ move here, the per-repo
+today — only the boilerplate step *definitions* move here, the per-repo
 customization stays local.
 
 This repo's own `hk.pkl` does the same thing, importing `base.pkl` locally
@@ -59,12 +59,27 @@ that still need markdown/toml/yaml/JSON formatting beyond what
 rumdl/tombi/ryl/biome already lint get that from those dedicated steps now,
 not from a separate dprint config.
 
+`tf` is the OpenTofu/Terraform group: `tf_lint` (tflint), `tofu` (`tofu
+validate` + `tofu fmt`), and `tf_security` — a `trivy config` misconfiguration
+scan gated to HIGH/CRITICAL. `tf_security` runs `trivy config` over the repo
+root rather than per-file, so it re-runs whenever any `*.tf` file changes.
+Spread `...Base.tf` in alongside `...Base.base`; encrypted `*.tfstate` excludes
+on the text-hygiene steps stay a local override, same as any other repo
+customization.
+
+The per-language opt-in groups, spread in alongside `base`: `python` (`ruff`,
+`ruff_format`, `ty`), `shell` (`shellcheck`, `shellharden`, `shfmt`), and
+`lua` (`luacheck`, `stylua`). Two more are opt-in but not spread automatically
+because they need network access and/or credentials: `renovate`
+(`renovate_config_validator`) and `checkly` (`checkly_preview`) — see the
+doc-comments in `base.pkl` for where it's safe to wire them into hooks.
+
 More group files (e.g. per-language extras) may be added alongside it later —
 `base.pkl` is named for being the foundation those would build on top of, not
 because it's the only file this package will ever contain.
 
 `commit_msg` (`check_conventional_commit`) is separate from `base`/`python`/
-`shell`/`lua`: it needs `commit_msg_file`, which only exists inside a
+`shell`/`lua`/`tf`: it needs `commit_msg_file`, which only exists inside a
 `commit-msg` hook, so spread it into that hook's `steps` specifically —
 spreading it into the shared `linters` mapping used by
 check/pre-commit/pre-push/fix fails with "Variable `commit_msg_file` is not
@@ -130,9 +145,13 @@ resolvable.
 `hk check`'s `pkl-package` step runs the same `pkl project package
 --skip-publish-check` on every commit (it's the one thing `hk validate`
 doesn't cover — `hk validate` only checks `hk.pkl` itself, not the modules
-this repo publishes). Only `base.pkl` is actually shipped in the package;
-this repo's own tooling config (`hk.pkl`, `dprint.json`, `mise.toml`,
-`README.md`) is excluded — partly because it isn't meant for consumption,
+this repo publishes). `hk check`'s `readme-steps` step
+(`scripts/check-readme-steps.sh`) covers the other sync gap: it evaluates
+`base.pkl`'s `allStepKeys` and fails if this README's *What's in `base.pkl`*
+section doesn't mention one of them — so adding a step without documenting it
+breaks the build. Only `base.pkl` is actually shipped in the package;
+this repo's own tooling config (`hk.pkl`, `biome.json`, `mise.toml`,
+`README.md`, `scripts/`) is excluded — partly because it isn't meant for consumption,
 partly because `hk.pkl` couldn't be evaluated by the official `pkl` CLI
 anyway: it uses the same ad-hoc `["key"] = { field = value }` one-off step
 syntax as every other repo's `hk.pkl`, which only hk's own bundled evaluator

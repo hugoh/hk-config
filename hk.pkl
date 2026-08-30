@@ -9,6 +9,7 @@ min_hk_version = Base.min_hk_version
 
 local linters = new Mapping<String, Step> {
     ...Base.base
+    ...Base.shell
     // hk validate only type-checks hk.pkl itself against hk's schema; it
     // doesn't touch the pkl modules this repo actually publishes. This
     // actually builds the package (evaluating base.pkl, verifying
@@ -27,6 +28,12 @@ local linters = new Mapping<String, Step> {
     // `hk validate` (not raw `pkl eval`) is the right tool for hk.pkl files.
     ["pkl-package"] = {
         check = "pkl project package --skip-publish-check --output-path .out/%{name}/%{version}"
+    }
+    // Fails if README's "What's in base.pkl" section doesn't mention a step
+    // key that base.pkl defines — the one sync gap pkl-package can't catch.
+    ["readme-steps"] = {
+        glob = List("base.pkl", "README.md", "scripts/check-readme-steps.sh")
+        check = "./scripts/check-readme-steps.sh"
     }
     ...Base.renovate
     ["renovate_config_validator"] = (Base.renovate["renovate_config_validator"]) {
