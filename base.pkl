@@ -61,16 +61,27 @@ shell: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["shfmt"] = Builtins.shfmt
 }
 
-/// OpenTofu / Terraform repos: tflint, `tofu validate`/`tofu fmt`, and a
-/// Trivy misconfiguration scan (HIGH/CRITICAL). Spread this in alongside
+/// OpenTofu / Terraform repos: tflint, `tofu fmt`, a Trivy misconfiguration
+/// scan (HIGH/CRITICAL), and `tofu validate`. Spread this in alongside
 /// `base`; `tf_security` runs `trivy config` over the repo root rather than
 /// per-file, so it re-runs whenever any `*.tf` file changes.
+///
+/// `tofu_validate` is gated to the `ci` profile: it needs `tofu init` (network,
+/// provider downloads) so it's a poor fit for `pre-commit`, and it only
+/// validates the root module in the working directory. The shared
+/// `hugoh/gh-workflows/hk-check` action runs `hk check --profile ci`, so it
+/// runs in CI automatically; run it locally with `hk check --profile ci`.
 tf: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["tf_lint"] = Builtins.tf_lint
     ["tofu"] = Builtins.tofu
     ["tf_security"] = new Config.Step {
         glob = List("**/*.tf")
         check = "trivy config --exit-code 1 --severity HIGH,CRITICAL ."
+    }
+    ["tofu_validate"] = new Config.Step {
+        glob = List("**/*.tf")
+        check = "tofu init -backend=false -input=false && tofu validate"
+        profiles = List("ci")
     }
 }
 
