@@ -59,12 +59,15 @@ that still need markdown/toml/yaml/JSON formatting beyond what
 rumdl/tombi/ryl/biome already lint get that from those dedicated steps now,
 not from a separate dprint config.
 
-`tf` is the OpenTofu/Terraform group: `tf_lint` (tflint), `tofu` (`tofu
-validate` + `tofu fmt`), and `tf_security` — a `trivy config` misconfiguration
-scan gated to HIGH/CRITICAL. `tf_security` runs `trivy config` over the repo
-root rather than per-file, so it re-runs whenever any `*.tf` file changes.
-Spread `...Base.tf` in alongside `...Base.base`; encrypted `*.tfstate` excludes
-on the text-hygiene steps stay a local override, same as any other repo
+`tf` is the OpenTofu/Terraform group: `tf_lint` (tflint), `tofu` (`tofu fmt`),
+`tf_security` — a `trivy config` misconfiguration scan gated to HIGH/CRITICAL —
+and `tofu_validate` (`tofu init` + `tofu validate`). `tf_security` runs `trivy
+config` over the repo root rather than per-file, so it re-runs whenever any
+`*.tf` file changes. `tofu_validate` is gated to the `ci` profile (it needs
+`tofu init` with network access), so it only runs under `hk check --profile
+ci` — which the shared `hugoh/gh-workflows/hk-check` action does. Spread
+`...Base.tf` in alongside `...Base.base`; encrypted `*.tfstate` excludes on the
+text-hygiene steps stay a local override, same as any other repo
 customization.
 
 The per-language opt-in groups, spread in alongside `base`: `python` (`ruff`,
