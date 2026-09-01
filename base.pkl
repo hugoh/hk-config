@@ -79,9 +79,9 @@ tf: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
 /// don't break; drop that spread next time you touch those repos' `hk.pkl`.
 web: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {}
 
-/// Lua repos (Hammerspoon Spoons, dotfiles): luacheck + stylua.
+/// Lua repos (Hammerspoon Spoons, dotfiles): selene + stylua.
 lua: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
-    ["luacheck"] = Builtins.luacheck
+    ["selene"] = Builtins.selene
     ["stylua"] = Builtins.stylua
 }
 
