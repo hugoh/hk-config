@@ -72,7 +72,7 @@ customization.
 
 The per-language opt-in groups, spread in alongside `base`: `python` (`ruff`,
 `ruff_format`, `ty`), `shell` (`shellcheck`, `shellharden`, `shfmt`), and
-`lua` (`luacheck`, `stylua`). Two more are opt-in but not spread automatically
+`lua` (`selene`, `stylua`). Two more are opt-in but not spread automatically
 because they need network access and/or credentials: `renovate`
 (`renovate_config_validator`) and `checkly` (`checkly_preview`) — see the
 doc-comments in `base.pkl` for where it's safe to wire them into hooks.
