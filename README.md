@@ -127,23 +127,25 @@ Checked via the `renovate-config-validator` step in `hk.pkl` on every commit/pus
 
 Releases are automatic, same as
 [`gh-workflows`](https://github.com/hugoh/gh-workflows). Every push to `main`
-runs `.github/workflows/release.yml`, which uses
-[`mathieudutour/github-tag-action`](https://github.com/mathieudutour/github-tag-action)
-to inspect commits since the last tag and bump semver based on
+runs `.github/workflows/release.yml`, a thin caller of the reusable
+[`hugoh/gh-workflows/.github/workflows/release.yml`](https://github.com/hugoh/gh-workflows/blob/main/.github/workflows/release.yml),
+which runs [`hugoh/cog-bump`](https://github.com/hugoh/cog-bump) (cocogitto) to
+inspect commits since the last tag and bump semver based on
 [Conventional Commits](https://www.conventionalcommits.org/) prefixes
-(`fix:` → patch, `feat:` → minor, `BREAKING CHANGE`/`!` → major) — note that
-`default_bump: false` means **only** those recognized prefixes cut a release;
-`chore:`/`docs:`/etc. commits are no-ops here. Bumping the `jdx/hk` pin in
-this repo must therefore be a `fix:` commit, not a `chore:` one, or no new
-release is cut for consuming repos to adopt. If nothing since the last tag
-warrants a bump, the workflow no-ops — no commit, no tag, no release.
+(`fix:` → patch, `feat:` → minor, `BREAKING CHANGE`/`!` → major) — only those
+recognized prefixes cut a release; `chore:`/`docs:`/etc. commits are no-ops.
+Bumping the `jdx/hk` pin in this repo must therefore be a `fix:` commit, not a
+`chore:` one, or no new release is cut for consuming repos to adopt. If nothing
+since the last tag warrants a bump, the workflow no-ops — no commit, no tag, no
+release.
 
-When a bump does happen, the same job packages the project with
-`pkl project package` and uploads the four resulting artifacts
-(`hk-config@<version>`, `.sha256`, `.zip`, `.zip.sha256`) to the new GitHub
-Release — that's what makes the `package://github.com/hugoh/hk-config/
-releases/download/v<version>/hk-config@<version>#/<file>.pkl` import URL
-resolvable.
+When a bump does happen, the reusable's `package-command` /
+`package-artifacts` inputs (set in the caller to `pkl project package
+--output-path dist` / `dist/*`) package the project and upload the four
+resulting artifacts (`hk-config@<version>`, `.sha256`, `.zip`, `.zip.sha256`)
+to the new GitHub Release — that's what makes the
+`package://github.com/hugoh/hk-config/releases/download/v<version>/hk-config@<version>#/<file>.pkl`
+import URL resolvable.
 
 `hk check`'s `pkl-package` step runs the same `pkl project package
 --skip-publish-check` on every commit (it's the one thing `hk validate`
