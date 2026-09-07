@@ -137,7 +137,7 @@ renovate: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
 checkly: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["checkly_preview"] = new Config.Step {
         glob = List("checkly.config.ts", "__checks__/**")
-        check = "bunx checkly deploy --preview"
+        check = "npx checkly deploy --preview"
     }
 }
 
