@@ -41,10 +41,6 @@ local linters = new Mapping<String, Step> {
     }
 }
 
-// Shared by the implicit check/fix/pre-commit hooks hk v2 materializes from
-// this: check runs unfixed, fix fixes without staging, pre-commit fixes and
-// stages — all matching defaults, so only pre-commit's stash needs overriding
-// below.
 steps = linters
 
 hooks {
