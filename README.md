@@ -132,9 +132,10 @@ Checked via the `renovate-config-validator` step in `hk.pkl` on every commit/pus
 The `renovate-managers` step (`scripts/check-renovate-managers.mjs`) goes
 further: it runs the custom managers through Renovate's own regex extractor
 over `test/fixtures/` (shaped like a consumer's `hk.pkl` and `mise.toml`, plus
-look-alikes that must *not* match) and over this repo's real pins, so a change
-to the pin format that makes the regexes stop matching fails here instead of
-silently stopping Renovate's hk PRs. The fixtures are not part of the package.
+similar-looking keys that must *not* match) and over this repo's real pins. A
+change to the pin format that makes the regexes stop matching therefore fails
+here instead of silently stopping Renovate's hk PRs. The fixtures are not part
+of the package.
 
 ## Versioning and releases
 
