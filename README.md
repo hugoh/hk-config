@@ -119,14 +119,21 @@ of its own. It covers:
 
 - Bumping the `hugoh/hk-config` pin in `.pkl` files (as before).
 - Bumping the `jdx/hk` pin in both `.pkl` files and `mise.toml`'s
-  `hk = "..."` entry together, grouped into a single PR
-  (`groupName: "hk toolchain"`, shared with the `hugoh/hk-config` bump above)
-  — so the Pkl schema pin and the installed CLI version don't drift apart,
-  and so an hk-config bump and the hk version bump it corresponds to land in
-  the same review.
+  `hk = "..."` entry together.
 - Disabling Renovate's built-in `mise` manager for `hk` specifically, so it
   doesn't also open a second, independently-timed PR for the same
   `mise.toml` line.
+
+What this file deliberately does **not** do is group or schedule those bumps.
+Renovate applies the extending config's own `packageRules` after anything
+pulled in through `extends`, so a `groupName` set here loses to the generic
+`minor updates` / `patch updates` groups in `renovate-config` (that is how
+the `jdx/hk` and `hugoh/hk-config` pins once ended up in separate PRs). The
+`hk toolchain` group, its 1-day release-age soak and its schedule therefore
+live in `renovate-config`'s `default.json`, where a check
+(`scripts/check-hk-grouping.mjs`) keeps them below the generic groups. In
+short: this repo says how to *read* the pins; `renovate-config` decides how
+they are *grouped and when*.
 
 Checked via the `renovate-config-validator` step in `hk.pkl` on every commit/push.
 
