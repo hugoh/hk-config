@@ -48,8 +48,9 @@ hugoh repo's `hk.pkl` `Common` group: `actionlint`, `pinact`,
 `newlines`, `check_case_conflict`, `check_added_large_files`,
 `check_executables_have_shebangs`, `check_symlinks`, `gitleaks`,
 `ghalint_workflow`, `rumdl`, `rumdl_format`, `biome`, `zizmor`, `typos`,
-`mise`, `tombi`, `tombi_format`, `ryl`, `hk_pin_sync`. Keys match the `Builtins` identifier
-they map to, so the step name always tells you which builtin is running.
+`mise`, `tombi`, `tombi_format`, `ryl`, `hk_pin_sync`. Keys match the
+`Builtins` identifier they map to, so the step name always tells you which
+builtin is running.
 
 `biome` covers JSON as well as JS/TS/JSX — that's why `dprint` (previously
 the only JSON formatter in the shared set) was dropped: dprint's `json` and

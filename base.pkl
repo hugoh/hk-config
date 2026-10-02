@@ -13,14 +13,9 @@ min_hk_version = "2.1.0"
 /// needs no per-repo wiring.
 local hkPinSync: Config.Step = new Config.Step {
     glob = List("hk.pkl", "mise.toml")
-    check = """
-        grep -Fq 'github.com/jdx/hk/releases/download/v\(min_hk_version)/hk@\(min_hk_version)#' hk.pkl \\
-          || { echo 'hk.pkl pins an hk version other than \(min_hk_version), which this hk-config release targets; bump jdx/hk and hugoh/hk-config together' >&2; exit 1; }
-        if grep -Eq '^hk *=' mise.toml 2>/dev/null; then
-          grep -Eq '^hk *= *"\(min_hk_version)"' mise.toml \\
-            || { echo 'mise.toml pins an hk version other than \(min_hk_version), which this hk-config release targets' >&2; exit 1; }
-        fi
-        """
+    // One line, ';'-separated, no backslash continuations: hk flattens the
+    // command, so a continuation backslash reaches grep as a literal argument.
+    check = "grep -Fq 'github.com/jdx/hk/releases/download/v\(min_hk_version)/hk@\(min_hk_version)#' hk.pkl || { echo 'hk.pkl pins an hk version other than \(min_hk_version), which this hk-config release targets; bump jdx/hk and hugoh/hk-config together' >&2; exit 1; }; if grep -Eq '^hk *=' mise.toml 2>/dev/null; then grep -Eq '^hk *= *\"\(min_hk_version)\"' mise.toml || { echo 'mise.toml pins an hk version other than \(min_hk_version), which this hk-config release targets' >&2; exit 1; }; fi"
 }
 
 /// The lowest-common-denominator step set shared by every hugoh repo's
