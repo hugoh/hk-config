@@ -1,0 +1,7 @@
+[tools]
+hk = "2.0.1"
+# Keys that merely start or end with "hk", or use another name, must not match.
+hkx = "9.9.9"
+myhk = "9.9.9"
+"npm:hk" = "9.9.9"
+lua = "5.1.5"
