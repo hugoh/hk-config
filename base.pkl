@@ -1,8 +1,8 @@
-import "package://github.com/jdx/hk/releases/download/v2.1.0/hk@2.1.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.1.0/hk@2.1.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.4.0/hk@2.4.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.4.0/hk@2.4.0#/Builtins.pkl"
 
 // Keep in lockstep with the amends/import version above — bump both together.
-min_hk_version = "2.1.0"
+min_hk_version = "2.4.0"
 
 /// Fails when a consuming repo's `hk.pkl` (and, if it pins `hk` there,
 /// `mise.toml`) uses a different hk version than the one this hk-config
