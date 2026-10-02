@@ -48,8 +48,9 @@ hugoh repo's `hk.pkl` `Common` group: `actionlint`, `pinact`,
 `newlines`, `check_case_conflict`, `check_added_large_files`,
 `check_executables_have_shebangs`, `check_symlinks`, `gitleaks`,
 `ghalint_workflow`, `rumdl`, `rumdl_format`, `biome`, `zizmor`, `typos`,
-`mise`, `tombi`, `tombi_format`, `ryl`. Keys match the `Builtins` identifier
-they map to, so the step name always tells you which builtin is running.
+`mise`, `tombi`, `tombi_format`, `ryl`, `hk_pin_sync`. Keys match the
+`Builtins` identifier they map to, so the step name always tells you which
+builtin is running.
 
 `biome` covers JSON as well as JS/TS/JSX — that's why `dprint` (previously
 the only JSON formatter in the shared set) was dropped: dprint's `json` and
@@ -87,6 +88,12 @@ because it's the only file this package will ever contain.
 spreading it into the shared `linters` mapping used by
 check/pre-commit/pre-push/fix fails with "Variable `commit_msg_file` is not
 defined".
+
+`hk_pin_sync` fails if the consuming repo's `hk.pkl` `amends`/`import` hk pin
+(or an `hk = "..."` entry in its `mise.toml`) differs from `min_hk_version`,
+i.e. from the hk release this hk-config release was built against. Renovate
+bumps the two pins in one PR (see below); this makes CI red if they drift
+anyway, e.g. when a new hk release lands before hk-config has adopted it.
 
 ## `min_hk_version`
 
