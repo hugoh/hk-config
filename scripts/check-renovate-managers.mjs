@@ -98,19 +98,23 @@ const real = (name) => readFileSync(join(root, name), "utf8");
 
 // A consumer's amends + two imports, one of them an unrelated package.
 const cases = [
+  // A consumer that still amends hk's package directly, plus hk-config.
   [
-    "fixture hk.pkl",
+    "fixture hk.pkl (direct hk pin)",
     "hk.pkl",
     fixture("hk.pkl"),
     [hk("2.0.1"), hk("2.0.1"), hkConfig("2.0.1")],
   ],
-  // base.pkl: two package imports and the min_hk_version line.
+  // A consumer that takes hk's schema from hk-config: no hk pin of its own.
   [
-    "fixture base.pkl",
-    "base.pkl",
-    fixture("base.pkl"),
-    [hk("2.0.1"), hk("2.0.1"), hk("2.0.1")],
+    "fixture hk-reexport.pkl (hk-config only)",
+    "hk.pkl",
+    fixture("hk-reexport.pkl"),
+    [hkConfig("2.0.1"), hkConfig("2.0.1"), hkConfig("2.0.1")],
   ],
+  // hk-config's own re-export modules and min_hk_version line.
+  ["fixture Config.pkl", "Config.pkl", fixture("Config.pkl"), [hk("2.0.1")]],
+  ["fixture base.pkl", "base.pkl", fixture("base.pkl"), [hk("2.0.1")]],
   ["fixture mise.toml", "mise.toml", fixture("mise.toml"), [hk("2.0.1")]],
 ];
 
@@ -130,7 +134,9 @@ for (const [name, file, content, expected] of cases) {
 // change here is caught without hard-coding the current version.
 for (const [file, minimum] of [
   ["hk.pkl", 2],
-  ["base.pkl", 3],
+  ["base.pkl", 1],
+  ["Config.pkl", 1],
+  ["Builtins.pkl", 1],
   ["mise.toml", 1],
 ]) {
   const got = (await extract(file, real(file))).filter((d) =>

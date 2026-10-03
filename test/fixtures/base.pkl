@@ -1,5 +1,5 @@
-import "package://github.com/jdx/hk/releases/download/v2.0.1/hk@2.0.1#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.0.1/hk@2.0.1#/Builtins.pkl"
+import "Config.pkl"
+import "Builtins.pkl"
 
-// Keep in lockstep with the amends/import version above — bump both together.
+// Keep in lockstep with the hk version in Config.pkl and Builtins.pkl.
 min_hk_version = "2.0.1"

@@ -1,13 +1,16 @@
-import "package://github.com/jdx/hk/releases/download/v2.4.0/hk@2.4.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.4.0/hk@2.4.0#/Builtins.pkl"
+import "Config.pkl"
+import "Builtins.pkl"
 
-// Keep in lockstep with the amends/import version above — bump both together.
+// Keep in lockstep with the hk version in Config.pkl and Builtins.pkl (the
+// re-export modules imported above) — bump all three together.
 min_hk_version = "2.4.0"
 
-/// Fails when a consuming repo's `hk.pkl` (and, if it pins `hk` there,
-/// `mise.toml`) uses a different hk version than the one this hk-config
-/// release was built against (`min_hk_version`, which the `amends`/`import`
-/// pins above must match). Renovate groups the two pins into one PR, but
+/// Fails when a consuming repo's `hk.pkl` (if it still pins hk directly) or
+/// `mise.toml` (if it pins `hk`) uses a different hk version than the one this
+/// hk-config release was built against (`min_hk_version`, which must match
+/// the hk version in `Config.pkl` and `Builtins.pkl`). Repos that take hk's
+/// schema from this package's `Config.pkl` / `Builtins.pkl` have no direct hk
+/// pin in `hk.pkl`, so only `mise.toml` is checked for them. Renovate groups the two pins into one PR, but
 /// this makes CI red if they ever drift anyway (partial merge, manual edit,
 /// hk released before hk-config catches up). Rides along in `base`, so it
 /// needs no per-repo wiring.
@@ -15,7 +18,7 @@ local function hkPinSync(v: String): Config.Step = new Config.Step {
     glob = List("hk.pkl", "mise.toml")
     // One line, ';'-separated, no backslash continuations: hk flattens the
     // command, so a continuation backslash reaches grep as a literal argument.
-    check = "grep -Fq 'github.com/jdx/hk/releases/download/v\(v)/hk@\(v)#' hk.pkl || { echo 'hk.pkl pins an hk version other than \(v), which this hk-config release targets; bump jdx/hk and hugoh/hk-config together' >&2; exit 1; }; if grep -Eq '^hk *=' mise.toml 2>/dev/null; then grep -Eq '^hk *= *\"\(v)\"' mise.toml || { echo 'mise.toml pins an hk version other than \(v), which this hk-config release targets' >&2; exit 1; }; fi"
+    check = "if grep -Fq 'github.com/jdx/hk/releases/download/' hk.pkl; then grep -Fq 'github.com/jdx/hk/releases/download/v\(v)/hk@\(v)#' hk.pkl || { echo 'hk.pkl pins an hk version other than \(v), which this hk-config release targets; bump jdx/hk and hugoh/hk-config together' >&2; exit 1; }; fi; if grep -Eq '^hk *=' mise.toml 2>/dev/null; then grep -Eq '^hk *= *\"\(v)\"' mise.toml || { echo 'mise.toml pins an hk version other than \(v), which this hk-config release targets' >&2; exit 1; }; fi"
 }
 
 /// The lowest-common-denominator step set shared by every hugoh repo's

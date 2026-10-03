@@ -23,6 +23,23 @@ local linters = new Mapping<String, Step> {
 }
 ```
 
+### Pinning only hk-config (optional)
+
+`Config.pkl` and `Builtins.pkl` in this package re-export hk's own modules at
+the hk version this release was built against, so a repo can pin hk-config
+alone and the hk schema can never disagree with `base.pkl`:
+
+```pkl
+amends "package://github.com/hugoh/hk-config/releases/download/vA.B.C/hk-config@A.B.C#/Config.pkl"
+import "package://github.com/hugoh/hk-config/releases/download/vA.B.C/hk-config@A.B.C#/Builtins.pkl"
+import "package://github.com/hugoh/hk-config/releases/download/vA.B.C/hk-config@A.B.C#/base.pkl" as Base
+
+min_hk_version = Base.min_hk_version
+```
+
+The `hk` CLI pin in `mise.toml` is still separate; `min_hk_version` makes an
+older CLI fail with a clear message, and `hk_pin_sync` checks it.
+
 `X.Y.Z` is the [hk release](https://github.com/jdx/hk/releases) you're pinning
 to, and `A.B.C` is the
 [hk-config release](https://github.com/hugoh/hk-config/releases) you're

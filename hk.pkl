@@ -40,7 +40,7 @@ local linters = new Mapping<String, Step> {
     // opening hk PRs. This runs them over fixtures shaped like a consumer's
     // hk.pkl / mise.toml (and over this repo's own pins).
     ["renovate-managers"] {
-        glob = List("renovate.json", "scripts/check-renovate-managers.mjs", "test/fixtures/**", "hk.pkl", "base.pkl", "mise.toml")
+        glob = List("renovate.json", "scripts/check-renovate-managers.mjs", "test/fixtures/**", "hk.pkl", "base.pkl", "Config.pkl", "Builtins.pkl", "mise.toml")
         check = "node scripts/check-renovate-managers.mjs"
     }
     ...Base.renovate

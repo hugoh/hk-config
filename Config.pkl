@@ -1,0 +1,5 @@
+/// Re-exports hk's `Config.pkl` at the hk version this hk-config release was
+/// built against, so a consuming repo's `hk.pkl` can `amends` this module and
+/// pin only hk-config; the hk schema version then can never disagree with the
+/// `base.pkl` it is used with. Equivalent to amending hk's own `Config.pkl`.
+amends "package://github.com/jdx/hk/releases/download/v2.4.0/hk@2.4.0#/Config.pkl"

@@ -1,0 +1,3 @@
+/// Re-exports hk's `Builtins.pkl` at the hk version this hk-config release was
+/// built against; see `Config.pkl`.
+amends "package://github.com/jdx/hk/releases/download/v2.4.0/hk@2.4.0#/Builtins.pkl"
