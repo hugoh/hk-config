@@ -35,6 +35,12 @@ local linters = new Mapping<String, Step> {
         glob = List("base.pkl", "README.md", "scripts/check-readme-steps.sh")
         check = "./scripts/check-readme-steps.sh"
     }
+    // Runs hk_pin_sync's command over throwaway consumer repos (any hk
+    // version passes; disagreeing pins fail).
+    ["hk-pin-sync"] {
+        glob = List("base.pkl", "scripts/check-hk-pin-sync.sh")
+        check = "./scripts/check-hk-pin-sync.sh"
+    }
     // renovate.json's custom managers are what lets Renovate read the hk and
     // hk-config pins; if their regexes stop matching, Renovate silently stops
     // opening hk PRs. This runs them over fixtures shaped like a consumer's

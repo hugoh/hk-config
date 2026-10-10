@@ -89,11 +89,14 @@ spreading it into the shared `linters` mapping used by
 check/pre-commit/pre-push/fix fails with "Variable `commit_msg_file` is not
 defined".
 
-`hk_pin_sync` fails if the consuming repo's `hk.pkl` `amends`/`import` hk pin
-(or an `hk = "..."` entry in its `mise.toml`) differs from `min_hk_version`,
-i.e. from the hk release this hk-config release was built against. Renovate
-bumps the two pins in one PR (see below); this makes CI red if they drift
-anyway, e.g. when a new hk release lands before hk-config has adopted it.
+`hk_pin_sync` fails if the consuming repo's `hk.pkl` `amends`/`import` hk pins
+disagree, or if an `hk = "..."` entry in its `mise.toml` differs from the
+`hk.pkl` pin. It does not compare against `min_hk_version` (below): hk itself
+refuses to run when the binary is older, and a newer hk passes, so a new hk
+release landing before hk-config has adopted it doesn't turn CI red;
+hk-config only needs a release when it needs a newer hk.
+`scripts/check-hk-pin-sync.sh` (the `hk-pin-sync` step in `hk.pkl`) exercises
+the check against throwaway consumer repos.
 
 ## `min_hk_version`
 
