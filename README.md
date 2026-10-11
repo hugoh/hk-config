@@ -127,16 +127,14 @@ of its own. It covers:
   doesn't also open a second, independently-timed PR for the same
   `mise.toml` line.
 
-What this file deliberately does **not** do is group or schedule those bumps.
-Renovate applies the extending config's own `packageRules` after anything
-pulled in through `extends`, so a `groupName` set here loses to the generic
-`minor updates` / `patch updates` groups in `renovate-config` (that is how
-the `jdx/hk` and `hugoh/hk-config` pins once ended up in separate PRs). The
-`hk toolchain` group, its 1-day release-age soak and its schedule therefore
-live in `renovate-config`'s `default.json`, where a check
-(`scripts/check-hk-grouping.mjs`) keeps them below the generic groups. In
-short: this repo says how to *read* the pins; `renovate-config` decides how
-they are *grouped and when*.
+What this file deliberately does **not** do is group or schedule those bumps:
+they follow the extending config's generic rules, so `jdx/hk` and
+`hugoh/hk-config` land in separate PRs. Nothing needs them to move together.
+A consumer may run an hk newer than the one its hk-config release was built
+against (`hk_pin_sync` doesn't compare them), and an hk-config release that
+needs a newer hk fails the consumer's CI via `min_hk_version` until the
+`jdx/hk` bump lands. Usually hk lands first: an hk release has to reach
+this repo and be released as hk-config before consumers can require it.
 
 Checked via the `renovate-config-validator` step in `hk.pkl` on every commit/push.
 The `renovate-managers` step (`scripts/check-renovate-managers.mjs`) goes
