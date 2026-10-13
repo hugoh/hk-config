@@ -98,6 +98,18 @@ hk-config only needs a release when it needs a newer hk.
 `scripts/check-hk-pin-sync.sh` (the `hk-pin-sync` step in `hk.pkl`) exercises
 the check against throwaway consumer repos.
 
+`stepTools` maps every step key to the mise tool it runs, spelled as consuming
+repos pin it in `mise.toml` (`null` for steps that run hk or mise themselves, or
+use an unpinned tool such as `npx`). `scripts/check-step-tools.sh` (the
+`step-tools` step in `hk.pkl`) fails if it drifts from `allStepKeys`, so a new
+step can't merge without declaring its tool.
+[`hugoh/renovate-config`](https://github.com/hugoh/renovate-config) reads
+`stepTools` in its own `check-package-rules.mjs` to check that every pinned
+linter is classified in its Renovate rules: when you add a step whose tool is a
+linter, add that tool to the `linters` rule in renovate-config's `default.json`
+(or to the exclusion list in the check script, with a reason). A tool left out
+just stays on the weekly schedule.
+
 ## `min_hk_version`
 
 `base.pkl` exports `min_hk_version`, set to the same version as the
