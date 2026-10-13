@@ -169,6 +169,52 @@ allStepKeys: List<String> =
     + checkly.keys.toList()
     + commit_msg.keys.toList()
 
+/// The mise tool key each step runs, exactly as consuming repos pin it in
+/// `mise.toml` (`null` when the step runs hk itself, mise itself, or a tool
+/// that isn't pinned). `hugoh/renovate-config`'s `check-package-rules.mjs`
+/// reads this to make sure every pinned linter is classified in its Renovate
+/// rules, and `scripts/check-step-tools.sh` fails if it drifts from
+/// `allStepKeys`.
+stepTools: Mapping<String, String?> = new Mapping<String, String?> {
+    ["actionlint"] = "actionlint"
+    ["pinact"] = "pinact"
+    ["check_merge_conflict"] = null
+    ["trailing_whitespace"] = null
+    ["mixed_line_ending"] = null
+    ["newlines"] = null
+    ["check_case_conflict"] = null
+    ["check_added_large_files"] = null
+    ["check_executables_have_shebangs"] = null
+    ["check_symlinks"] = null
+    ["gitleaks"] = "gitleaks"
+    ["ghalint_workflow"] = "ghalint"
+    ["rumdl"] = "rumdl"
+    ["rumdl_format"] = "rumdl"
+    ["biome"] = "biome"
+    ["zizmor"] = "zizmor"
+    ["typos"] = "typos"
+    ["mise"] = null
+    ["tombi"] = "tombi"
+    ["tombi_format"] = "tombi"
+    ["ryl"] = "github:owenlamont/ryl"
+    ["hk_pin_sync"] = null
+    ["ruff"] = "ruff"
+    ["ruff_format"] = "ruff"
+    ["ty"] = "ty"
+    ["shellcheck"] = "shellcheck"
+    ["shellharden"] = "github:anordal/shellharden"
+    ["shfmt"] = "shfmt"
+    ["selene"] = "aqua:Kampfkarren/selene"
+    ["stylua"] = "stylua"
+    ["tf_lint"] = "tflint"
+    ["tofu"] = "tofu"
+    ["tf_security"] = "trivy"
+    ["tofu_validate"] = "tofu"
+    ["renovate_config_validator"] = "npm:renovate"
+    ["checkly_preview"] = null
+    ["check_conventional_commit"] = null
+}
+
 /// Conventional Commit message linting. Needs `commit_msg_file`, which only
 /// exists in a `commit-msg` hook — spread this into that hook's own steps,
 /// never into `linters` (used by check/pre-commit/pre-push/fix), or the step

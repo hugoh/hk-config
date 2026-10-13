@@ -35,6 +35,12 @@ local linters = new Mapping<String, Step> {
         glob = List("base.pkl", "README.md", "scripts/check-readme-steps.sh")
         check = "./scripts/check-readme-steps.sh"
     }
+    // Fails if base.pkl's stepTools (step -> mise tool) drifts from
+    // allStepKeys, so a new step can't merge without naming its tool.
+    ["step-tools"] {
+        glob = List("base.pkl", "scripts/check-step-tools.sh")
+        check = "./scripts/check-step-tools.sh"
+    }
     // Runs hk_pin_sync's command over throwaway consumer repos (any hk
     // version passes; disagreeing pins fail).
     ["hk-pin-sync"] {
