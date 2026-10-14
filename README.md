@@ -140,13 +140,14 @@ of its own. It covers:
   `mise.toml` line.
 
 What this file deliberately does **not** do is group or schedule those bumps:
-they follow the extending config's generic rules, so `jdx/hk` and
-`hugoh/hk-config` land in separate PRs. Nothing needs them to move together.
-A consumer may run an hk newer than the one its hk-config release was built
-against (`hk_pin_sync` doesn't compare them), and an hk-config release that
-needs a newer hk fails the consumer's CI via `min_hk_version` until the
-`jdx/hk` bump lands. Usually hk lands first: an hk release has to reach
-this repo and be released as hk-config before consumers can require it.
+that is the extending hub's job. An hk-config release can require a newer hk
+(`min_hk_version`), and fails the consumer's CI until the `jdx/hk` bump lands,
+so both hubs bump the two together, in one PR with one 7-day soak (a shorter
+hk-config soak would let it mature before the hk it needs):
+[`renovate-config`](https://github.com/hugoh/renovate-config)'s `default.json`
+in its monthly `linters` group (see its README, "The hk pins"), and go-tools in
+its `dev tools` groups. In this repo, hk is part of the project rather than a
+tool it lints with, so it stays in the generic groups.
 
 Checked via the `renovate-config-validator` step in `hk.pkl` on every commit/push.
 The `renovate-managers` step (`scripts/check-renovate-managers.mjs`) goes
