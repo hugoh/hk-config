@@ -1,8 +1,8 @@
-import "package://github.com/jdx/hk/releases/download/v2.5.0/hk@2.5.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.5.0/hk@2.5.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Builtins.pkl"
 
 // Keep in lockstep with the amends/import version above — bump both together.
-min_hk_version = "2.5.0"
+min_hk_version = "2.6.0"
 
 /// Fails when a consuming repo's `hk.pkl` `amends` and `import` pins
 /// disagree, or when a `mise.toml` `hk` pin differs from the `hk.pkl` one.
@@ -33,7 +33,7 @@ local hkPinSync: Config.Step = new Config.Step {
 /// }
 /// ```
 base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
-    ["actionlint"] = Builtins.actionlint
+    ["jactionlint"] = Builtins.jactionlint
     ["pinact"] = Builtins.pinact
     ["check_merge_conflict"] = Builtins.check_merge_conflict
     ["trailing_whitespace"] = Builtins.trailing_whitespace
@@ -176,7 +176,7 @@ allStepKeys: List<String> =
 /// rules, and `scripts/check-step-tools.sh` fails if it drifts from
 /// `allStepKeys`.
 stepTools: Mapping<String, String?> = new Mapping<String, String?> {
-    ["actionlint"] = "actionlint"
+    ["jactionlint"] = "jactionlint"
     ["pinact"] = "pinact"
     ["check_merge_conflict"] = null
     ["trailing_whitespace"] = null

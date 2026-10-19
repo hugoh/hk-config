@@ -43,7 +43,7 @@ it's just reading a sibling file off disk).
 ## What's in `base.pkl`
 
 The lowest-common-denominator step set found active, unmodified, across every
-hugoh repo's `hk.pkl` `Common` group: `actionlint`, `pinact`,
+hugoh repo's `hk.pkl` `Common` group: `jactionlint`, `pinact`,
 `check_merge_conflict`, `trailing_whitespace`, `mixed_line_ending`,
 `newlines`, `check_case_conflict`, `check_added_large_files`,
 `check_executables_have_shebangs`, `check_symlinks`, `gitleaks`,
@@ -109,6 +109,17 @@ linter is classified in its Renovate rules: when you add a step whose tool is a
 linter, add that tool to the `linters` rule in renovate-config's `default.json`
 (or to the exclusion list in the check script, with a reason). A tool left out
 just stays on the weekly schedule.
+
+## Migrating from v2 to v3
+
+v3 replaces the `actionlint` step with `jactionlint`
+([jdx/jactionlint](https://github.com/jdx/jactionlint), an actionlint fork), so
+it needs hk 2.6.0 or newer. `scripts/migrate-v3.sh [repo-dir]` does the
+consumer-side changes, idempotently: it renames the `actionlint` tool in
+`mise.toml` to `jactionlint` (version from `JACTIONLINT_VERSION`), renames
+`actionlint` step overrides in `hk.pkl`, and moves `.github/actionlint.yaml` to
+`.github/jactionlint.yaml`, adding `profile: default` if the file sets no
+profile. It leaves the hk and hk-config pins alone.
 
 ## `min_hk_version`
 
