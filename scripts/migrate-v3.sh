@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Migrates a consumer repo from hk-config v2 (actionlint) to v3 (jactionlint):
 #   - mise.toml: renames the `actionlint` tool to `jactionlint`
-#   - hk.pkl: renames `actionlint` step overrides / Builtins references
+#   - hk.pkl: renames `actionlint` step overrides / Builtins references, and
+#     rewrites `["key"] = {` steps to `["key"] {` (hk 2.6.0 rejects the former)
 #   - .github/jactionlint.yaml: carries over actionlint's config if there is
 #     one, and makes sure it sets `profile: default`
 # It doesn't touch the hk / hk-config pins; Renovate (or you) bumps those.
@@ -31,6 +32,13 @@ fi
 if [ -f hk.pkl ] && grep -Eq '\["actionlint"\]|Builtins\.actionlint' hk.pkl; then
     sed -E -i 's/\["actionlint"\]/["jactionlint"]/g; s/Builtins\.actionlint/Builtins.jactionlint/g' hk.pkl
     echo "hk.pkl: renamed actionlint -> jactionlint"
+fi
+
+# hk.pkl: hk 2.6.0 rejects `["key"] = { ... }` (no `new Step`); the amending
+# form `["key"] { ... }` means the same and works in every hk version.
+if [ -f hk.pkl ] && grep -Eq '^[[:space:]]*\[[^]]+\][[:space:]]*=[[:space:]]*\{' hk.pkl; then
+    sed -E -i 's/^([[:space:]]*\[[^]]+\])[[:space:]]*=[[:space:]]*\{/\1 {/' hk.pkl
+    echo 'hk.pkl: rewrote ["key"] = { to ["key"] {'
 fi
 
 # jactionlint reads actionlint's config, but looks for its own file first.

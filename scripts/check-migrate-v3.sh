@@ -89,6 +89,33 @@ has_line hk.pkl '    ["jactionlint"] = (Base.base["jactionlint"]) {'
 has_line hk.pkl '    ["extra"] = Builtins.jactionlint'
 has_line hk.pkl '    ["pinact"] = Builtins.pinact'
 
+new_repo "hk.pkl step syntax"
+cat >"$repo/hk.pkl" <<'EOF'
+local linters = new Mapping<String, Step> {
+    ["a"] = {
+        check = "a"
+    }
+    ["b"]    =   { check = "b" }
+    ["c"] {
+        check = "c"
+    }
+    ["d"] = new Step {
+        check = "d"
+    }
+    ["e"] = Builtins.pinact
+    ["f"] = (Base.base["f"]) {
+        exclude = List("x")
+    }
+}
+EOF
+run
+has_line hk.pkl '    ["a"] {'
+has_line hk.pkl '    ["b"] { check = "b" }'
+has_line hk.pkl '    ["c"] {'
+has_line hk.pkl '    ["d"] = new Step {'
+has_line hk.pkl '    ["e"] = Builtins.pinact'
+has_line hk.pkl '    ["f"] = (Base.base["f"]) {'
+
 new_repo "no mise.toml or hk.pkl"
 run
 has_line .github/jactionlint.yaml 'profile: default'
@@ -141,7 +168,7 @@ has_line .github/jactionlint.yaml 'profile: correctness'
 new_repo "idempotent"
 mkdir "$repo/.github"
 printf '[tools]\nactionlint = "1.7.12"\n' >"$repo/mise.toml"
-printf '["actionlint"] = Builtins.actionlint\n' >"$repo/hk.pkl"
+printf '["actionlint"] = Builtins.actionlint\n["x"] = {\n}\n' >"$repo/hk.pkl"
 printf 'paths: {}' >"$repo/.github/actionlint.yaml"
 run
 first=$(snapshot)

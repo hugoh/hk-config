@@ -117,7 +117,8 @@ v3 replaces the `actionlint` step with `jactionlint`
 it needs hk 2.6.0 or newer. `scripts/migrate-v3.sh [repo-dir]` does the
 consumer-side changes, idempotently: it renames the `actionlint` tool in
 `mise.toml` to `jactionlint` (version from `JACTIONLINT_VERSION`), renames
-`actionlint` step overrides in `hk.pkl`, and moves `.github/actionlint.yaml` to
+`actionlint` step overrides in `hk.pkl` (and rewrites `["key"] = {` steps to
+`["key"] {`, which hk 2.6.0 requires), and moves `.github/actionlint.yaml` to
 `.github/jactionlint.yaml`, adding `profile: default` if the file sets no
 profile. It leaves the hk and hk-config pins alone.
 `scripts/check-migrate-v3.sh` (the `migrate-v3` step in `hk.pkl`) runs it over
