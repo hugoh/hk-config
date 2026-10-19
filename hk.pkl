@@ -26,12 +26,12 @@ local linters = new Mapping<String, Step> {
     // hk.pkl in this fleet fails standalone, this one included — that's why
     // hk.pkl is excluded from the published package below, and why
     // `hk validate` (not raw `pkl eval`) is the right tool for hk.pkl files.
-    ["pkl-package"] = {
+    ["pkl-package"] {
         check = "pkl project package --skip-publish-check --output-path .out/%{name}/%{version}"
     }
     // Fails if README's "What's in base.pkl" section doesn't mention a step
     // key that base.pkl defines — the one sync gap pkl-package can't catch.
-    ["readme-steps"] = {
+    ["readme-steps"] {
         glob = List("base.pkl", "README.md", "scripts/check-readme-steps.sh")
         check = "./scripts/check-readme-steps.sh"
     }
