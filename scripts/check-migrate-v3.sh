@@ -232,7 +232,8 @@ case $err in *"jactionlint not found"*) ;; *) fail "no missing-binary note" ;; e
 
 # mise_bin <dir> [jactionlint stub exit status]: a PATH dir with a fake mise
 # (logging its calls to $work/mise.log) and, if given a status, a fake
-# jactionlint for `mise exec`/`mise which` to find.
+# jactionlint for `mise exec`/`mise which` to find. Both look only in that
+# dir, so a real jactionlint elsewhere on PATH can't leak in.
 mise_bin() {
     mkdir -p "$1"
     # shellcheck disable=SC2016 # the fake mise expands these when it runs
@@ -241,8 +242,8 @@ mise_bin() {
         'echo "$*" >>"$MISE_LOG"' \
         'case $1 in' \
         '    install) exit "${MISE_INSTALL_STATUS:-0}" ;;' \
-        '    which) command -v "$2" >/dev/null ;;' \
-        '    exec) shift 2; exec "$@" ;;' \
+        '    which) [ -x "${0%/*}/$2" ] ;;' \
+        '    exec) shift 2; exec "${0%/*}/$1" "${@:2}" ;;' \
         'esac' >"$1/mise"
     chmod +x "$1/mise"
     if [ "${2:-}" != "" ]; then
