@@ -34,6 +34,71 @@ if [ -f hk.pkl ] && grep -Eq '\["actionlint"\]|Builtins\.actionlint' hk.pkl; the
     echo "hk.pkl: renamed actionlint -> jactionlint"
 fi
 
+# latest_version <repo-url> <version regex>: the highest tag of the repo whose
+# version (the tag without its leading v) matches the regex, or nothing.
+latest_version() {
+    git ls-remote --tags --refs "$1" 2>/dev/null |
+        sed -E 's#.*refs/tags/v?##' | grep -E "$2" | sort -V | tail -1 || true
+}
+
+# hk: bump the hk pins (hk.pkl amends/import URLs, a literal min_hk_version,
+# and mise.toml's `hk =`) together, since hk_pin_sync wants them to agree and
+# v3 needs hk >= 2.6.0. HK_VERSION pins a version; otherwise it's the latest
+# stable hk release, and a pin that is already newer is left alone.
+hk_version=${HK_VERSION:-}
+hk_explicit=$hk_version
+if [ "$hk_version" = "" ]; then
+    hk_version=$(latest_version https://github.com/jdx/hk '^[0-9]+\.[0-9]+\.[0-9]+$')
+fi
+if [ "$hk_version" = "" ]; then
+    echo "could not determine the latest hk release; set HK_VERSION to bump the hk pins" >&2
+else
+    hk_pins=$(grep -Eo 'jdx/hk/releases/download/v[^/]+/hk@[^#]+#' hk.pkl 2>/dev/null || true)
+    hk_current=$(sed -n 's#^hk[[:space:]]*=[[:space:]]*"\([^"]*\)".*#\1#p' mise.toml 2>/dev/null | head -1 || true)
+    [ "$hk_current" != "" ] || hk_current=$(printf '%s\n' "$hk_pins" | sed -E 's|.*hk@||; s|#$||' | sort -V | tail -1)
+    newest=$(printf '%s\n%s\n' "$hk_current" "$hk_version" | sort -V | tail -1)
+    if [ "$hk_explicit" = "" ] && [ "$hk_current" != "" ] && [ "$newest" != "$hk_version" ]; then
+        echo "hk: $hk_current is newer than the latest release $hk_version; leaving it"
+    else
+        wanted="jdx/hk/releases/download/v$hk_version/hk@$hk_version#"
+        if [ -f hk.pkl ]; then
+            if printf '%s\n' "$hk_pins" | grep -Fvx -- "$wanted" | grep -q .; then
+                sed -E -i "s|(jdx/hk/releases/download/)v[^/]+(/hk@)[^#]+#|\\1v$hk_version\\2$hk_version#|g" hk.pkl
+                echo "hk.pkl: hk -> $hk_version"
+            fi
+            if grep -Eq 'min_hk_version[[:space:]]*=[[:space:]]*"' hk.pkl &&
+                ! grep -Eq "min_hk_version[[:space:]]*=[[:space:]]*\"$hk_version\"" hk.pkl; then
+                sed -E -i "s|(min_hk_version[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\\1\"$hk_version\"|" hk.pkl
+                echo "hk.pkl: min_hk_version -> $hk_version"
+            fi
+        fi
+        if grep -Eq '^hk[[:space:]]*=' mise.toml 2>/dev/null &&
+            ! grep -Eq "^hk[[:space:]]*=[[:space:]]*\"$hk_version\"[[:space:]]*\$" mise.toml; then
+            sed -E -i "s|^(hk[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\\1\"$hk_version\"|" mise.toml
+            echo "mise.toml: hk -> $hk_version"
+        fi
+    fi
+fi
+
+# hk-config: point the hk-config import in hk.pkl at the latest v3 release
+# (HK_CONFIG_VERSION pins one). The v2 definitions still have the actionlint
+# step, so this is what makes the renames above resolve.
+if [ -f hk.pkl ] && grep -q 'hugoh/hk-config/releases/download/' hk.pkl; then
+    config_version=${HK_CONFIG_VERSION:-}
+    if [ "$config_version" = "" ]; then
+        config_version=$(latest_version https://github.com/hugoh/hk-config '^3\.[0-9]+\.[0-9]+$')
+    fi
+    if [ "$config_version" = "" ]; then
+        echo "could not find a v3 hk-config release; set HK_CONFIG_VERSION, or bump the hk-config pin in hk.pkl once v3 is released" >&2
+    else
+        wanted="hugoh/hk-config/releases/download/v$config_version/hk-config@$config_version#"
+        if grep -Eo 'hugoh/hk-config/releases/download/v[^/]+/hk-config@[^#]+#' hk.pkl | grep -Fvx -- "$wanted" | grep -q .; then
+            sed -E -i "s|(hugoh/hk-config/releases/download/)v[^/]+(/hk-config@)[^#]+#|\\1v$config_version\\2$config_version#|g" hk.pkl
+            echo "hk.pkl: hk-config -> $config_version"
+        fi
+    fi
+fi
+
 # hk.pkl: hk 2.6.0 rejects `["key"] = { ... }` (no `new Step`); the amending
 # form `["key"] { ... }` means the same and works in every hk version.
 if [ -f hk.pkl ] && grep -Eq '^[[:space:]]*\[[^]]+\][[:space:]]*=[[:space:]]*\{' hk.pkl; then

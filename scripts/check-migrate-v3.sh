@@ -15,6 +15,26 @@ fail() {
     failed=1
 }
 
+# Tag lookups (git ls-remote https://github.com/...) are redirected to local
+# repos, so nothing here touches the network. latest hk is 2.10.0 (so 2.6.0 <
+# 2.10.0 must sort numerically and the rc must be skipped); the latest v3
+# hk-config is 3.10.0. "nov3" has hk-config tags below v3 only.
+make_remote() { # <root> <repo> <tag>...
+    local dir=$1/$2 tag
+    shift 2
+    git init -q "$dir"
+    git -C "$dir" -c user.email=a@b -c user.name=t commit -q --allow-empty -m i
+    for tag in "$@"; do git -C "$dir" tag "$tag"; done
+}
+make_remote "$work/remotes" jdx/hk v2.5.0 v2.6.0 v2.10.0 v2.10.1-rc.1
+make_remote "$work/remotes" hugoh/hk-config v2.9.0 v3.0.0 v3.1.0 v3.10.0
+make_remote "$work/nov3" jdx/hk v2.5.0 v2.6.0 v2.10.0
+make_remote "$work/nov3" hugoh/hk-config v2.9.0
+remote_env() { printf 'GIT_CONFIG_COUNT=1\nGIT_CONFIG_KEY_0=url.%s/.insteadOf\nGIT_CONFIG_VALUE_0=https://github.com/\n' "$1"; }
+mapfile -t remotes <<<"$(remote_env "$work/remotes")"
+mapfile -t nov3 <<<"$(remote_env "$work/nov3")"
+mapfile -t offline <<<"$(remote_env "$work/nowhere")"
+
 # new_repo <name>: an empty git repo in $work/<name>, entered by the caller.
 new_repo() {
     case_name=$1
@@ -25,7 +45,7 @@ new_repo() {
 
 # run [env...]: migrate $repo, keeping stdout/stderr in $out / $err.
 run() {
-    env JACTIONLINT_BIN=/nonexistent "$@" "$migrate" "$repo" >"$work/out" 2>"$work/err" || fail "script exited non-zero"
+    env JACTIONLINT_BIN=/nonexistent "${remotes[@]}" "$@" "$migrate" "$repo" >"$work/out" 2>"$work/err" || fail "script exited non-zero"
     out=$(<"$work/out")
     err=$(<"$work/err")
 }
@@ -57,7 +77,7 @@ new_repo "mise string pin"
 printf '[tools]\n# keep me\nhk = "2.6.0"\nactionlint = "1.7.12"\npinact = "5.0.0"\n' >"$repo/mise.toml"
 run
 has_line mise.toml 'jactionlint = "2.2.0"'
-has_line mise.toml 'hk = "2.6.0"'
+has_line mise.toml 'hk = "2.10.0"'
 has_line mise.toml 'pinact = "5.0.0"'
 has_line mise.toml '# keep me'
 no_actionlint mise.toml
@@ -129,6 +149,80 @@ has_line hk.pkl '    ["d"] = new Step {'
 has_line hk.pkl '    ["e"] = Builtins.pinact'
 has_line hk.pkl '    ["f"] = (Base.base["f"]) {'
 
+# consumer_pins <hk version> <hk-config version> [mise hk pin|-]: a consumer
+# hk.pkl (and mise.toml) pinning those versions.
+consumer_pins() {
+    local pkl=package://github.com
+    cat >"$repo/hk.pkl" <<EOF
+amends "$pkl/jdx/hk/releases/download/v$1/hk@$1#/Config.pkl"
+import "$pkl/jdx/hk/releases/download/v$1/hk@$1#/Builtins.pkl"
+import "$pkl/hugoh/hk-config/releases/download/v$2/hk-config@$2#/base.pkl" as Base
+min_hk_version = "$1"
+EOF
+    [ "${3:--}" = "-" ] || printf '[tools]\nhk = "%s"\nlua = "5"\n' "$3" >"$repo/mise.toml"
+}
+hk_url() { printf '%s/jdx/hk/releases/download/v%s/hk@%s#/%s.pkl' package://github.com "$1" "$1" "$2"; }
+config_url() { printf '%s/hugoh/hk-config/releases/download/v%s/hk-config@%s#/base.pkl' package://github.com "$1" "$1"; }
+
+new_repo "pins: latest hk and latest v3 hk-config"
+consumer_pins 2.5.0 2.2.1 2.5.0
+run
+has_line hk.pkl "amends \"$(hk_url 2.10.0 Config)\""
+has_line hk.pkl "import \"$(hk_url 2.10.0 Builtins)\""
+has_line hk.pkl "import \"$(config_url 3.10.0)\" as Base"
+has_line hk.pkl 'min_hk_version = "2.10.0"'
+has_line mise.toml 'hk = "2.10.0"'
+has_line mise.toml 'lua = "5"'
+
+new_repo "pins: explicit versions"
+consumer_pins 2.5.0 2.2.1 2.5.0
+run HK_VERSION=2.6.1 HK_CONFIG_VERSION=3.0.0
+has_line hk.pkl "amends \"$(hk_url 2.6.1 Config)\""
+has_line hk.pkl "import \"$(config_url 3.0.0)\" as Base"
+has_line mise.toml 'hk = "2.6.1"'
+
+new_repo "pins: an hk newer than the latest release stays"
+consumer_pins 2.11.0 2.2.1 2.11.0
+run
+has_line hk.pkl "amends \"$(hk_url 2.11.0 Config)\""
+has_line mise.toml 'hk = "2.11.0"'
+has_line hk.pkl "import \"$(config_url 3.10.0)\" as Base"
+case $out in *"newer than the latest release"*) ;; *) fail "no note about the newer hk: $out" ;; esac
+
+new_repo "pins: amends and import disagree"
+consumer_pins 2.5.0 2.2.1 -
+printf 'import "%s"\n' "$(hk_url 2.6.0 Builtins)" >>"$repo/hk.pkl"
+run
+[ "$(grep -Eo 'jdx/hk/releases/download/v[^/]+/hk@[^#]+#' "$repo/hk.pkl" | sort -u | wc -l)" -eq 1 ] || fail "hk pins still disagree"
+
+new_repo "pins: no mise.toml hk entry"
+consumer_pins 2.5.0 2.2.1 -
+run
+has_line hk.pkl "amends \"$(hk_url 2.10.0 Config)\""
+absent mise.toml
+
+new_repo "pins: no v3 hk-config release yet"
+consumer_pins 2.5.0 2.2.1 2.5.0
+run "${nov3[@]}"
+has_line hk.pkl "import \"$(config_url 2.2.1)\" as Base"
+has_line hk.pkl "amends \"$(hk_url 2.10.0 Config)\""
+case $err in *"could not find a v3 hk-config release"*) ;; *) fail "no note about the missing v3 release: $err" ;; esac
+
+new_repo "pins: tag lookup fails"
+consumer_pins 2.5.0 2.2.1 2.5.0
+run "${offline[@]}"
+has_line hk.pkl "amends \"$(hk_url 2.5.0 Config)\""
+has_line mise.toml 'hk = "2.5.0"'
+case $err in *"could not determine the latest hk release"*) ;; *) fail "no note about the failed lookup: $err" ;; esac
+case $err in *"could not find a v3 hk-config release"*) ;; *) fail "no note about hk-config: $err" ;; esac
+
+new_repo "pins: hk.pkl without an hk-config import"
+printf 'amends "%s"\n' "$(hk_url 2.5.0 Config)" >"$repo/hk.pkl"
+run
+has_line hk.pkl "amends \"$(hk_url 2.10.0 Config)\""
+lacks hk.pkl 'hk-config'
+case $err in *"hk-config"*) fail "hk-config note for a repo that doesn't use it: $err" ;; esac
+
 new_repo "no mise.toml or hk.pkl"
 run
 has_line .github/jactionlint.yaml 'profile: default'
@@ -180,8 +274,9 @@ has_line .github/jactionlint.yaml 'profile: correctness'
 
 new_repo "idempotent"
 mkdir "$repo/.github"
-printf '[tools]\nactionlint = "1.7.12"\n' >"$repo/mise.toml"
-printf '["actionlint"] = Builtins.actionlint\n["x"] = {\n}\n' >"$repo/hk.pkl"
+consumer_pins 2.5.0 2.2.1 2.5.0
+printf 'actionlint = "1.7.12"\n' >>"$repo/mise.toml"
+printf '["actionlint"] = Builtins.actionlint\n["x"] = {\n}\n' >>"$repo/hk.pkl"
 printf 'paths: {}' >"$repo/.github/actionlint.yaml"
 run
 first=$(snapshot)
