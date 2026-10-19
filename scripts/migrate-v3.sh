@@ -43,7 +43,7 @@ latest_version() {
 
 # hk: bump the hk pins (hk.pkl amends/import URLs, a literal min_hk_version,
 # and mise.toml's `hk =`) together, since hk_pin_sync wants them to agree and
-# v3 needs hk >= 2.6.0. HK_VERSION pins a version; otherwise it's the latest
+# v3 needs hk >= 2.7.0. HK_VERSION pins a version; otherwise it's the latest
 # stable hk release, and a pin that is already newer is left alone.
 hk_version=${HK_VERSION:-}
 hk_explicit=$hk_version

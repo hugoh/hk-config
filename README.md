@@ -114,7 +114,7 @@ just stays on the weekly schedule.
 
 v3 replaces the `actionlint` step with `jactionlint`
 ([jdx/jactionlint](https://github.com/jdx/jactionlint), an actionlint fork), so
-it needs hk 2.6.0 or newer. `scripts/migrate-v3.sh [repo-dir]` does the
+it needs hk 2.7.0 or newer. `scripts/migrate-v3.sh [repo-dir]` does the
 consumer-side changes, idempotently: it renames the `actionlint` tool in
 `mise.toml` to `jactionlint` (version from `JACTIONLINT_VERSION`), renames
 `actionlint` step overrides in `hk.pkl` (and rewrites `["key"] = {` steps to
