@@ -120,8 +120,8 @@ consumer-side changes, idempotently: it renames the `actionlint` tool in
 `actionlint` step overrides in `hk.pkl` (and rewrites `["key"] = {` steps to
 `["key"] {`, which hk 2.6.0 requires), and moves `.github/actionlint.yaml` to
 `.github/jactionlint.yaml`, adding `profile: default` if the file sets no
-profile. It then runs `jactionlint` over the workflows and, if that finds
-issues, prints what to change (the `default` profile adds rules actionlint
+profile. It then runs `mise install` and `jactionlint` (through `mise exec`,
+so the pinned version is used) over the workflows and, if that finds issues, prints what to change (the `default` profile adds rules actionlint
 never had, such as `concurrency-limits` and `excessive-permissions`); that
 report doesn't change its exit status. It leaves the hk and hk-config pins
 alone.

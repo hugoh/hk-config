@@ -71,15 +71,29 @@ fi
 # adds security and policy rules that actionlint never had, so a repo that was
 # clean before can have findings now. They don't undo the migration, so this
 # only reports (exit status stays 0) and says what to do about them.
-lint=${JACTIONLINT_BIN:-jactionlint}
 shopt -s nullglob
 workflows=(.github/workflows/*.yml .github/workflows/*.yaml)
 [ "${#workflows[@]}" -gt 0 ] || exit 0
-if ! command -v "$lint" >/dev/null 2>&1; then
-    echo "jactionlint not found; run 'mise install' and then 'jactionlint' to check the workflows" >&2
+
+# Install the tools mise.toml now pins (jactionlint, via the rename above) and
+# run through mise so that pin is the version used. JACTIONLINT_BIN skips mise
+# and runs that binary as is.
+if [ "${JACTIONLINT_BIN:-}" != "" ]; then
+    lint=("$JACTIONLINT_BIN")
+    have=(command -v "$JACTIONLINT_BIN")
+elif command -v mise >/dev/null 2>&1; then
+    mise install >&2 || echo "mise install failed; linting with what is installed" >&2
+    lint=(mise exec -- jactionlint)
+    have=(mise which jactionlint)
+else
+    lint=(jactionlint)
+    have=(command -v jactionlint)
+fi
+if ! "${have[@]}" >/dev/null 2>&1; then
+    echo "jactionlint not found; install it ('mise install') and run 'jactionlint' to check the workflows" >&2
     exit 0
 fi
-if findings=$("$lint" "${workflows[@]}" 2>&1); then
+if findings=$("${lint[@]}" "${workflows[@]}" 2>&1); then
     echo "jactionlint: workflows are clean"
     exit 0
 fi
@@ -90,8 +104,8 @@ mapfile -t rules < <(printf '%s\n' "$findings" | grep -Eo '\[[a-z0-9-]+\]$' | tr
     echo "jactionlint found issues in the workflows (profile: default). To fix them:"
     for rule in "${rules[@]}"; do
         case $rule in
-            concurrency-limits)
-                cat <<'TIP'
+        concurrency-limits)
+            cat <<'TIP'
   - concurrency-limits: add a top-level `concurrency:` block. If the jobs call
     reusable workflows, make the group caller-specific, or the called workflow
     cancels itself (inside it, github.workflow is the caller's name):
@@ -103,17 +117,17 @@ mapfile -t rules < <(printf '%s\n' "$findings" | grep -Eo '\[[a-z0-9-]+\]$' | tr
     `cancel-in-progress: false`: cancelling a release half-way is worse than
     queueing.
 TIP
-                ;;
-            excessive-permissions)
-                cat <<'TIP'
+            ;;
+        excessive-permissions)
+            cat <<'TIP'
   - excessive-permissions: set `permissions: {}` at the workflow level and
     move the write scopes (e.g. `contents: write`) onto the job that needs
     them, so a job added later doesn't inherit them silently.
 TIP
-                ;;
-            *)
-                echo "  - $rule: see 'jactionlint --list-rules' and the rule's docs for the fix"
-                ;;
+            ;;
+        *)
+            echo "  - $rule: see 'jactionlint --list-rules' and the rule's docs for the fix"
+            ;;
         esac
     done
     cat <<'TIP'

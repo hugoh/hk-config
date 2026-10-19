@@ -213,6 +213,7 @@ stub bad 1 \
     '.github/workflows/a.yml:10:3: "contents: write" is set [excessive-permissions]' \
     '.github/workflows/b.yaml:7:5: something else [some-other-rule]'
 run JACTIONLINT_BIN="$work/bad"
+# shellcheck disable=SC2016 # backticks are literal text in the guidance
 for want in '[concurrency-limits]' 'caller-' 'cancel-in-progress: false' \
     'excessive-permissions: set `permissions: {}`' 'some-other-rule: see' \
     'jactionlint --fix' 'profile: correctness'; do
@@ -228,6 +229,50 @@ case $err in *"excessive-permissions: set"*) ;; *) fail "no permissions guidance
 lint_repo "lint: jactionlint missing"
 run JACTIONLINT_BIN=/nonexistent
 case $err in *"jactionlint not found"*) ;; *) fail "no missing-binary note" ;; esac
+
+# mise_bin <dir> [jactionlint stub exit status]: a PATH dir with a fake mise
+# (logging its calls to $work/mise.log) and, if given a status, a fake
+# jactionlint for `mise exec`/`mise which` to find.
+mise_bin() {
+    mkdir -p "$1"
+    # shellcheck disable=SC2016 # the fake mise expands these when it runs
+    printf '%s\n' \
+        '#!/usr/bin/env bash' \
+        'echo "$*" >>"$MISE_LOG"' \
+        'case $1 in' \
+        '    install) exit "${MISE_INSTALL_STATUS:-0}" ;;' \
+        '    which) command -v "$2" >/dev/null ;;' \
+        '    exec) shift 2; exec "$@" ;;' \
+        'esac' >"$1/mise"
+    chmod +x "$1/mise"
+    if [ "${2:-}" != "" ]; then
+        stub "${1##*/}/jactionlint" "$2" '.github/workflows/a.yml:4:1: no concurrency [concurrency-limits]'
+    fi
+}
+# Stubs live next to $work, and the one under bin/ must be found by name.
+mise_run() { run PATH="$1:$PATH" JACTIONLINT_BIN= MISE_LOG="$work/mise.log" "${@:2}"; }
+
+lint_repo "lint: mise installs, then lints through mise"
+rm -f "$work/mise.log"
+mise_bin "$work/bin-ok" 0
+mise_run "$work/bin-ok"
+case $out in *"workflows are clean"*) ;; *) fail "no clean message via mise: $out" ;; esac
+[ "$(head -1 "$work/mise.log")" = "install" ] || fail "mise install was not run first: $(<"$work/mise.log")"
+grep -Fxq 'exec -- jactionlint .github/workflows/a.yml .github/workflows/b.yaml' "$work/mise.log" || fail "jactionlint not run through mise exec: $(<"$work/mise.log")"
+
+lint_repo "lint: mise install fails"
+rm -f "$work/mise.log"
+mise_bin "$work/bin-ok"
+mise_run "$work/bin-ok" MISE_INSTALL_STATUS=1
+case $err in *"mise install failed"*) ;; *) fail "no mise install failure note" ;; esac
+grep -Fq 'exec -- jactionlint' "$work/mise.log" || fail "lint skipped after a failed mise install"
+
+lint_repo "lint: mise has no jactionlint"
+rm -f "$work/mise.log"
+mise_bin "$work/bin-none"
+mise_run "$work/bin-none"
+case $err in *"jactionlint not found"*) ;; *) fail "no not-found note via mise" ;; esac
+grep -Fq 'exec' "$work/mise.log" && fail "mise exec ran without jactionlint"
 
 new_repo "lint: no workflows"
 stub unused 1 'never called [x]'
