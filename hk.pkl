@@ -47,6 +47,12 @@ local linters = new Mapping<String, Step> {
         glob = List("base.pkl", "scripts/check-hk-pin-sync.sh")
         check = "./scripts/check-hk-pin-sync.sh"
     }
+    // Runs scripts/migrate-v3.sh over throwaway consumer repos (renames,
+    // profile default, idempotence).
+    ["migrate-v3"] {
+        glob = List("scripts/migrate-v3.sh", "scripts/check-migrate-v3.sh")
+        check = "./scripts/check-migrate-v3.sh"
+    }
     // renovate.json's custom managers are what lets Renovate read the hk and
     // hk-config pins; if their regexes stop matching, Renovate silently stops
     // opening hk PRs. This runs them over fixtures shaped like a consumer's

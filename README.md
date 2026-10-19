@@ -120,6 +120,8 @@ consumer-side changes, idempotently: it renames the `actionlint` tool in
 `actionlint` step overrides in `hk.pkl`, and moves `.github/actionlint.yaml` to
 `.github/jactionlint.yaml`, adding `profile: default` if the file sets no
 profile. It leaves the hk and hk-config pins alone.
+`scripts/check-migrate-v3.sh` (the `migrate-v3` step in `hk.pkl`) runs it over
+throwaway repos.
 
 ## `min_hk_version`
 

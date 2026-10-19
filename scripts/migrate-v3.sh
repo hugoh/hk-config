@@ -17,8 +17,8 @@ cd "${1:-.}"
 # mise.toml: `actionlint = "1.7.12"` -> `jactionlint = "<version>"`. Other
 # spellings (table form, backend prefixes) only get the key renamed.
 if [ -f mise.toml ]; then
-    if grep -Eq '^actionlint[[:space:]]*=[[:space:]]*"' mise.toml; then
-        sed -E -i "s/^actionlint[[:space:]]*=[[:space:]]*\"[^\"]*\"/jactionlint = \"$version\"/" mise.toml
+    if grep -Eq '^"?actionlint"?[[:space:]]*=[[:space:]]*"' mise.toml; then
+        sed -E -i "s/^\"?actionlint\"?[[:space:]]*=[[:space:]]*\"[^\"]*\"/jactionlint = \"$version\"/" mise.toml
         echo "mise.toml: actionlint -> jactionlint $version"
     elif grep -Eq '^"?actionlint"?[[:space:]]*=' mise.toml; then
         sed -E -i 's/^"?actionlint"?([[:space:]]*=)/jactionlint\1/' mise.toml
