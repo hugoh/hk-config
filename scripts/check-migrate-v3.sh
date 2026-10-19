@@ -133,7 +133,7 @@ absent .github/actionlint.yaml
 has_line .github/jactionlint.yaml 'self-hosted-runner:'
 has_line .github/jactionlint.yaml '  labels: [x]'
 has_line .github/jactionlint.yaml 'profile: default'
-[ -z "$(git -C "$repo" ls-files .github/actionlint.yaml)" ] || fail "old config still tracked"
+[ "$(git -C "$repo" ls-files .github/actionlint.yaml)" = "" ] || fail "old config still tracked"
 
 new_repo "config: untracked actionlint.yml moves"
 mkdir "$repo/.github"
@@ -174,6 +174,6 @@ run
 first=$(snapshot)
 run
 [ "$(snapshot)" = "$first" ] || fail "second run changed files"
-[ -z "$out" ] || fail "second run reported changes: $out"
+[ "$out" = "" ] || fail "second run reported changes: $out"
 
 exit "$failed"

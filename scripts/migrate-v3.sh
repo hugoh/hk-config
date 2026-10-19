@@ -62,7 +62,7 @@ if [ ! -f "$config" ]; then
     echo "$config: created with profile: default"
 elif ! grep -Eq '^profile:' "$config"; then
     # Keep a missing trailing newline from gluing the key onto the last line.
-    [ -z "$(tail -c1 "$config")" ] || echo >>"$config"
+    [ "$(tail -c1 "$config")" = "" ] || echo >>"$config"
     echo 'profile: default' >>"$config"
     echo "$config: added profile: default"
 fi
