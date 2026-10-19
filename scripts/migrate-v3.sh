@@ -66,3 +66,63 @@ elif ! grep -Eq '^profile:' "$config"; then
     echo 'profile: default' >>"$config"
     echo "$config: added profile: default"
 fi
+
+# Lint the workflows with the profile just configured. The default profile
+# adds security and policy rules that actionlint never had, so a repo that was
+# clean before can have findings now. They don't undo the migration, so this
+# only reports (exit status stays 0) and says what to do about them.
+lint=${JACTIONLINT_BIN:-jactionlint}
+shopt -s nullglob
+workflows=(.github/workflows/*.yml .github/workflows/*.yaml)
+[ "${#workflows[@]}" -gt 0 ] || exit 0
+if ! command -v "$lint" >/dev/null 2>&1; then
+    echo "jactionlint not found; run 'mise install' and then 'jactionlint' to check the workflows" >&2
+    exit 0
+fi
+if findings=$("$lint" "${workflows[@]}" 2>&1); then
+    echo "jactionlint: workflows are clean"
+    exit 0
+fi
+printf '%s\n' "$findings" >&2
+mapfile -t rules < <(printf '%s\n' "$findings" | grep -Eo '\[[a-z0-9-]+\]$' | tr -d '[]' | sort -u)
+{
+    echo
+    echo "jactionlint found issues in the workflows (profile: default). To fix them:"
+    for rule in "${rules[@]}"; do
+        case $rule in
+            concurrency-limits)
+                cat <<'TIP'
+  - concurrency-limits: add a top-level `concurrency:` block. If the jobs call
+    reusable workflows, make the group caller-specific, or the called workflow
+    cancels itself (inside it, github.workflow is the caller's name):
+        concurrency:
+          group: ${{ github.workflow }}-caller-${{ github.event.pull_request.number || github.ref }}
+          cancel-in-progress: true
+    For release/publish workflows (and any push-to-main one) use
+    `group: ${{ github.workflow }}-caller-${{ github.ref }}` and
+    `cancel-in-progress: false`: cancelling a release half-way is worse than
+    queueing.
+TIP
+                ;;
+            excessive-permissions)
+                cat <<'TIP'
+  - excessive-permissions: set `permissions: {}` at the workflow level and
+    move the write scopes (e.g. `contents: write`) onto the job that needs
+    them, so a job added later doesn't inherit them silently.
+TIP
+                ;;
+            *)
+                echo "  - $rule: see 'jactionlint --list-rules' and the rule's docs for the fix"
+                ;;
+        esac
+    done
+    cat <<'TIP'
+
+Other options:
+  - 'jactionlint --fix' applies the safe fixes ('--diff' previews them).
+  - Findings that can't be fixed yet: '# jactionlint ignore=<rule>' on the
+    line, or a baseline ('jactionlint --baseline-write') to fail only on new ones.
+  - To start from actionlint-equivalent checks, set 'profile: correctness' in
+    .github/jactionlint.yaml and move up to 'default' once the workflows are clean.
+TIP
+} >&2

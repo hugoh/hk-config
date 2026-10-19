@@ -25,7 +25,7 @@ new_repo() {
 
 # run [env...]: migrate $repo, keeping stdout/stderr in $out / $err.
 run() {
-    env "$@" "$migrate" "$repo" >"$work/out" 2>"$work/err" || fail "script exited non-zero"
+    env JACTIONLINT_BIN=/nonexistent "$@" "$migrate" "$repo" >"$work/out" 2>"$work/err" || fail "script exited non-zero"
     out=$(<"$work/out")
     err=$(<"$work/err")
 }
@@ -36,6 +36,19 @@ lacks() { ! grep -Fq -- "$2" "$repo/$1" || fail "$1 still contains: $2"; }
 no_actionlint() { ! grep -Eq '(^|[^j])actionlint' "$repo/$1" || fail "$1 still mentions actionlint"; }
 exists() { [ -e "$repo/$1" ] || fail "$1 is missing"; }
 absent() { [ ! -e "$repo/$1" ] || fail "$1 should be gone"; }
+
+# stub <name> <exit status> [output line]...: an executable that records its
+# arguments in $work/<name>.args, prints the lines to stderr and exits.
+stub() {
+    local name=$1 status=$2 line
+    shift 2
+    {
+        printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$@" >"%s.args"\n' "$work/$name"
+        for line in "$@"; do printf 'echo %q >&2\n' "$line"; done
+        printf 'exit %s\n' "$status"
+    } >"$work/$name"
+    chmod +x "$work/$name"
+}
 
 # snapshot: hash of every file outside .git, to prove idempotence.
 snapshot() { (cd "$repo" && find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha256sum); }
@@ -175,5 +188,50 @@ first=$(snapshot)
 run
 [ "$(snapshot)" = "$first" ] || fail "second run changed files"
 [ "$out" = "" ] || fail "second run reported changes: $out"
+
+# jactionlint run -----------------------------------------------------------
+
+# lint_repo <name>: a repo with one .yml and one .yaml workflow.
+lint_repo() {
+    new_repo "$1"
+    mkdir -p "$repo/.github/workflows"
+    : >"$repo/.github/workflows/a.yml"
+    : >"$repo/.github/workflows/b.yaml"
+}
+
+lint_repo "lint: clean"
+stub clean 0
+run JACTIONLINT_BIN="$work/clean"
+case $out in *"workflows are clean"*) ;; *) fail "no clean message: $out" ;; esac
+case $err in *"found issues"*) fail "guidance printed for a clean run" ;; esac
+[ "$(<"$work/clean.args")" = ".github/workflows/a.yml
+.github/workflows/b.yaml" ] || fail "jactionlint not given both workflow files"
+
+lint_repo "lint: findings"
+stub bad 1 \
+    '.github/workflows/a.yml:4:1: workflow has no "concurrency:" [concurrency-limits]' \
+    '.github/workflows/a.yml:10:3: "contents: write" is set [excessive-permissions]' \
+    '.github/workflows/b.yaml:7:5: something else [some-other-rule]'
+run JACTIONLINT_BIN="$work/bad"
+for want in '[concurrency-limits]' 'caller-' 'cancel-in-progress: false' \
+    'excessive-permissions: set `permissions: {}`' 'some-other-rule: see' \
+    'jactionlint --fix' 'profile: correctness'; do
+    case $err in *"$want"*) ;; *) fail "guidance lacks: $want" ;; esac
+done
+
+lint_repo "lint: only the matching rules get guidance"
+stub perms 1 '.github/workflows/a.yml:10:3: "contents: write" is set [excessive-permissions]'
+run JACTIONLINT_BIN="$work/perms"
+case $err in *"concurrency-limits: add"*) fail "concurrency guidance for a permissions-only finding" ;; esac
+case $err in *"excessive-permissions: set"*) ;; *) fail "no permissions guidance" ;; esac
+
+lint_repo "lint: jactionlint missing"
+run JACTIONLINT_BIN=/nonexistent
+case $err in *"jactionlint not found"*) ;; *) fail "no missing-binary note" ;; esac
+
+new_repo "lint: no workflows"
+stub unused 1 'never called [x]'
+run JACTIONLINT_BIN="$work/unused"
+[ ! -e "$work/unused.args" ] || fail "jactionlint ran with no workflows"
 
 exit "$failed"
