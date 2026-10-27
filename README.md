@@ -130,7 +130,10 @@ leaves that pin. Finally it runs `mise install` and `jactionlint` (through
 `mise exec`, so the pinned version is used) over the workflows and, if that
 finds issues, prints what to change (the `default` profile adds rules
 actionlint never had, such as `concurrency-limits` and
-`excessive-permissions`); that report doesn't change its exit status.
+`excessive-permissions`); that report doesn't change its exit status. The last
+step is `hk check --all` (through `mise exec`, or `HK_BIN`), and the script
+exits with its status, so it only succeeds when the migrated repo passes. The
+script is zsh, so it runs as is on macOS.
 `scripts/check-migrate-v3.sh` (the `migrate-v3` step in `hk.pkl`) runs it over
 throwaway repos.
 

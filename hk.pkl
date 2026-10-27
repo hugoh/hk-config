@@ -10,6 +10,16 @@ min_hk_version = Base.min_hk_version
 local linters = new Mapping<String, Step> {
     ...Base.base
     ...Base.shell
+    // migrate-v3.sh is zsh, which none of these parse.
+    ["shellcheck"] = (Base.shell["shellcheck"]) {
+        exclude = List("scripts/migrate-v3.sh")
+    }
+    ["shellharden"] = (Base.shell["shellharden"]) {
+        exclude = List("scripts/migrate-v3.sh")
+    }
+    ["shfmt"] = (Base.shell["shfmt"]) {
+        exclude = List("scripts/migrate-v3.sh")
+    }
     // hk validate only type-checks hk.pkl itself against hk's schema; it
     // doesn't touch the pkl modules this repo actually publishes. This
     // actually builds the package (evaluating base.pkl, verifying
