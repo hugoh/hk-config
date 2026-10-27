@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S zsh -f
 # Migrates a consumer repo from hk-config v2 (actionlint) to v3 (jactionlint):
 #   - mise.toml: renames the `actionlint` tool to `jactionlint`
 #   - hk.pkl: renames `actionlint` step overrides / Builtins references, and
@@ -7,22 +7,28 @@
 #     one, and makes sure it sets `profile: default`
 # It doesn't touch the hk / hk-config pins; Renovate (or you) bumps those.
 # Idempotent: running it again on a migrated repo changes nothing.
+# Then it runs `hk check --all` and exits with its status.
 #
 # Usage: scripts/migrate-v3.sh [repo-dir]    (default: current directory)
 # Env:   JACTIONLINT_VERSION  version written to mise.toml (default below)
+#        JACTIONLINT_BIN      jactionlint binary to lint with (skips mise)
+#        HK_BIN               hk binary for the final check (skips mise)
 set -euo pipefail
 
 version=${JACTIONLINT_VERSION:-2.2.0}
 cd "${1:-.}"
 
+# sedi <sed -E args> <file>: in-place edit that works with GNU and BSD sed.
+sedi() { sed -E -i.bak "$@" && rm -f -- "${@[-1]}.bak"; }
+
 # mise.toml: `actionlint = "1.7.12"` -> `jactionlint = "<version>"`. Other
 # spellings (table form, backend prefixes) only get the key renamed.
 if [ -f mise.toml ]; then
     if grep -Eq '^"?actionlint"?[[:space:]]*=[[:space:]]*"' mise.toml; then
-        sed -E -i "s/^\"?actionlint\"?[[:space:]]*=[[:space:]]*\"[^\"]*\"/jactionlint = \"$version\"/" mise.toml
+        sedi "s/^\"?actionlint\"?[[:space:]]*=[[:space:]]*\"[^\"]*\"/jactionlint = \"$version\"/" mise.toml
         echo "mise.toml: actionlint -> jactionlint $version"
     elif grep -Eq '^"?actionlint"?[[:space:]]*=' mise.toml; then
-        sed -E -i 's/^"?actionlint"?([[:space:]]*=)/jactionlint\1/' mise.toml
+        sedi 's/^"?actionlint"?([[:space:]]*=)/jactionlint\1/' mise.toml
         echo "mise.toml: renamed the actionlint key; check its version by hand" >&2
     fi
 fi
@@ -30,7 +36,7 @@ fi
 # hk.pkl: step overrides (`["actionlint"]`, `Base.base["actionlint"]`) and
 # `Builtins.actionlint`.
 if [ -f hk.pkl ] && grep -Eq '\["actionlint"\]|Builtins\.actionlint' hk.pkl; then
-    sed -E -i 's/\["actionlint"\]/["jactionlint"]/g; s/Builtins\.actionlint/Builtins.jactionlint/g' hk.pkl
+    sedi 's/\["actionlint"\]/["jactionlint"]/g; s/Builtins\.actionlint/Builtins.jactionlint/g' hk.pkl
     echo "hk.pkl: renamed actionlint -> jactionlint"
 fi
 
@@ -63,18 +69,18 @@ else
         wanted="jdx/hk/releases/download/v$hk_version/hk@$hk_version#"
         if [ -f hk.pkl ]; then
             if printf '%s\n' "$hk_pins" | grep -Fvx -- "$wanted" | grep -q .; then
-                sed -E -i "s|(jdx/hk/releases/download/)v[^/]+(/hk@)[^#]+#|\\1v$hk_version\\2$hk_version#|g" hk.pkl
+                sedi "s|(jdx/hk/releases/download/)v[^/]+(/hk@)[^#]+#|\\1v$hk_version\\2$hk_version#|g" hk.pkl
                 echo "hk.pkl: hk -> $hk_version"
             fi
             if grep -Eq 'min_hk_version[[:space:]]*=[[:space:]]*"' hk.pkl &&
                 ! grep -Eq "min_hk_version[[:space:]]*=[[:space:]]*\"$hk_version\"" hk.pkl; then
-                sed -E -i "s|(min_hk_version[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\\1\"$hk_version\"|" hk.pkl
+                sedi "s|(min_hk_version[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\\1\"$hk_version\"|" hk.pkl
                 echo "hk.pkl: min_hk_version -> $hk_version"
             fi
         fi
         if grep -Eq '^hk[[:space:]]*=' mise.toml 2>/dev/null &&
             ! grep -Eq "^hk[[:space:]]*=[[:space:]]*\"$hk_version\"[[:space:]]*\$" mise.toml; then
-            sed -E -i "s|^(hk[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\\1\"$hk_version\"|" mise.toml
+            sedi "s|^(hk[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\\1\"$hk_version\"|" mise.toml
             echo "mise.toml: hk -> $hk_version"
         fi
     fi
@@ -93,7 +99,7 @@ if [ -f hk.pkl ] && grep -q 'hugoh/hk-config/releases/download/' hk.pkl; then
     else
         wanted="hugoh/hk-config/releases/download/v$config_version/hk-config@$config_version#"
         if grep -Eo 'hugoh/hk-config/releases/download/v[^/]+/hk-config@[^#]+#' hk.pkl | grep -Fvx -- "$wanted" | grep -q .; then
-            sed -E -i "s|(hugoh/hk-config/releases/download/)v[^/]+(/hk-config@)[^#]+#|\\1v$config_version\\2$config_version#|g" hk.pkl
+            sedi "s|(hugoh/hk-config/releases/download/)v[^/]+(/hk-config@)[^#]+#|\\1v$config_version\\2$config_version#|g" hk.pkl
             echo "hk.pkl: hk-config -> $config_version"
         fi
     fi
@@ -102,7 +108,7 @@ fi
 # hk.pkl: hk 2.6.0 rejects `["key"] = { ... }` (no `new Step`); the amending
 # form `["key"] { ... }` means the same and works in every hk version.
 if [ -f hk.pkl ] && grep -Eq '^[[:space:]]*\[[^]]+\][[:space:]]*=[[:space:]]*\{' hk.pkl; then
-    sed -E -i 's/^([[:space:]]*\[[^]]+\])[[:space:]]*=[[:space:]]*\{/\1 {/' hk.pkl
+    sedi 's/^([[:space:]]*\[[^]]+\])[[:space:]]*=[[:space:]]*\{/\1 {/' hk.pkl
     echo 'hk.pkl: rewrote ["key"] = { to ["key"] {'
 fi
 
@@ -134,11 +140,12 @@ fi
 
 # Lint the workflows with the profile just configured. The default profile
 # adds security and policy rules that actionlint never had, so a repo that was
-# clean before can have findings now. They don't undo the migration, so this
-# only reports (exit status stays 0) and says what to do about them.
-shopt -s nullglob
+# clean before can have findings now. This only reports and says what to do
+# about them; the hk check below is what decides the exit status.
+lint_workflows() {
+setopt null_glob
 workflows=(.github/workflows/*.yml .github/workflows/*.yaml)
-[ "${#workflows[@]}" -gt 0 ] || exit 0
+[ "${#workflows[@]}" -gt 0 ] || return 0
 
 # Install the tools mise.toml now pins (jactionlint, via the rename above) and
 # run through mise so that pin is the version used. JACTIONLINT_BIN skips mise
@@ -156,14 +163,14 @@ else
 fi
 if ! "${have[@]}" >/dev/null 2>&1; then
     echo "jactionlint not found; install it ('mise install') and run 'jactionlint' to check the workflows" >&2
-    exit 0
+    return 0
 fi
 if findings=$("${lint[@]}" "${workflows[@]}" 2>&1); then
     echo "jactionlint: workflows are clean"
-    exit 0
+    return 0
 fi
 printf '%s\n' "$findings" >&2
-mapfile -t rules < <(printf '%s\n' "$findings" | grep -Eo '\[[a-z0-9-]+\]$' | tr -d '[]' | sort -u)
+rules=(${(f)"$(printf '%s\n' "$findings" | grep -Eo '\[[a-z0-9-]+\]$' | tr -d '[]' | sort -u || true)"})
 {
     echo
     echo "jactionlint found issues in the workflows (profile: default). To fix them:"
@@ -205,3 +212,18 @@ Other options:
     .github/jactionlint.yaml and move up to 'default' once the workflows are clean.
 TIP
 } >&2
+}
+
+lint_workflows
+
+# The migrated repo must pass its own checks. HK_BIN skips mise and runs that
+# binary as is. Repos without an hk.pkl have nothing to check.
+[ -f hk.pkl ] || exit 0
+if [ "${HK_BIN:-}" != "" ]; then
+    hk_cmd=("$HK_BIN")
+elif command -v mise >/dev/null 2>&1; then
+    hk_cmd=(mise exec -- hk)
+else
+    hk_cmd=(hk)
+fi
+"${hk_cmd[@]}" check --all

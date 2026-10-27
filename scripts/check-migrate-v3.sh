@@ -31,9 +31,9 @@ make_remote "$work/remotes" hugoh/hk-config v2.9.0 v3.0.0 v3.1.0 v3.10.0
 make_remote "$work/nov3" jdx/hk v2.5.0 v2.6.0 v2.10.0
 make_remote "$work/nov3" hugoh/hk-config v2.9.0
 remote_env() { printf 'GIT_CONFIG_COUNT=1\nGIT_CONFIG_KEY_0=url.%s/.insteadOf\nGIT_CONFIG_VALUE_0=https://github.com/\n' "$1"; }
-mapfile -t remotes <<<"$(remote_env "$work/remotes")"
-mapfile -t nov3 <<<"$(remote_env "$work/nov3")"
-mapfile -t offline <<<"$(remote_env "$work/nowhere")"
+IFS=$'\n' read -r -d '' -a remotes < <(remote_env "$work/remotes") || true
+IFS=$'\n' read -r -d '' -a nov3 < <(remote_env "$work/nov3") || true
+IFS=$'\n' read -r -d '' -a offline < <(remote_env "$work/nowhere") || true
 
 # new_repo <name>: an empty git repo in $work/<name>, entered by the caller.
 new_repo() {
@@ -45,7 +45,7 @@ new_repo() {
 
 # run [env...]: migrate $repo, keeping stdout/stderr in $out / $err.
 run() {
-    env JACTIONLINT_BIN=/nonexistent "${remotes[@]}" "$@" "$migrate" "$repo" >"$work/out" 2>"$work/err" || fail "script exited non-zero"
+    env JACTIONLINT_BIN=/nonexistent HK_BIN="$work/hk-ok" "${remotes[@]}" "$@" "$migrate" "$repo" >"$work/out" 2>"$work/err" || fail "script exited non-zero"
     out=$(<"$work/out")
     err=$(<"$work/err")
 }
@@ -69,6 +69,9 @@ stub() {
     } >"$work/$name"
     chmod +x "$work/$name"
 }
+
+stub hk-ok 0
+stub hk-bad 1 "hk check failed"
 
 # snapshot: hash of every file outside .git, to prove idempotence.
 snapshot() { (cd "$repo" && find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha256sum); }
@@ -374,5 +377,23 @@ new_repo "lint: no workflows"
 stub unused 1 'never called [x]'
 run JACTIONLINT_BIN="$work/unused"
 [ ! -e "$work/unused.args" ] || fail "jactionlint ran with no workflows"
+
+new_repo "hk check: runs check --all in a repo with hk.pkl"
+consumer_pins 2.5.0 2.2.1 2.5.0
+rm -f "$work/hk-ok.args"
+run
+[ "$(<"$work/hk-ok.args")" = "check
+--all" ] || fail "hk not run as check --all"
+
+new_repo "hk check: failure fails the script"
+consumer_pins 2.5.0 2.2.1 2.5.0
+if env JACTIONLINT_BIN=/nonexistent HK_BIN="$work/hk-bad" "${remotes[@]}" "$migrate" "$repo" >/dev/null 2>&1; then
+    fail "script passed although hk check failed"
+fi
+
+new_repo "hk check: skipped without hk.pkl"
+rm -f "$work/hk-ok.args"
+run
+[ ! -e "$work/hk-ok.args" ] || fail "hk ran without an hk.pkl"
 
 exit "$failed"
