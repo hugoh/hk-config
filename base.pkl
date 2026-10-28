@@ -1,8 +1,8 @@
-import "package://github.com/jdx/hk/releases/download/v2.7.0/hk@2.7.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.7.0/hk@2.7.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Builtins.pkl"
 
 // Keep in lockstep with the amends/import version above — bump both together.
-min_hk_version = "2.7.0"
+min_hk_version = "2.9.0"
 
 /// Fails when a consuming repo's `hk.pkl` `amends` and `import` pins
 /// disagree, or when a `mise.toml` `hk` pin differs from the `hk.pkl` one.
@@ -48,12 +48,12 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["rumdl"] = Builtins.rumdl
     ["rumdl_format"] = Builtins.rumdl_format
     ["biome"] = Builtins.biome
-    ["zizmor"] = Builtins.zizmor
     ["typos"] = Builtins.typos
     ["mise"] = Builtins.mise
     ["tombi"] = Builtins.tombi
     ["tombi_format"] = Builtins.tombi_format
     ["ryl"] = Builtins.ryl
+    ["ryl_format"] = Builtins.ryl_format
     ["hk_pin_sync"] = hkPinSync
 }
 
@@ -87,16 +87,12 @@ shell: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
 /// runs in CI automatically; run it locally with `hk check --profile ci`.
 tf: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["tf_lint"] = Builtins.tf_lint
-    ["tofu"] = Builtins.tofu
     ["tf_security"] = new Config.Step {
         glob = List("**/*.tf")
         check = "trivy config --exit-code 1 --severity HIGH,CRITICAL ."
     }
-    ["tofu_validate"] = new Config.Step {
-        glob = List("**/*.tf")
-        check = "tofu init -backend=false -input=false && tofu validate"
-        profiles = List("ci")
-    }
+    ["tofu"] = Builtins.tofu
+    ["tofu_validate"] = Builtins.tofu_validate
 }
 
 /// Deprecated: biome moved into `base` (it now also covers JSON, replacing
@@ -191,12 +187,12 @@ stepTools: Mapping<String, String?> = new Mapping<String, String?> {
     ["rumdl"] = "rumdl"
     ["rumdl_format"] = "rumdl"
     ["biome"] = "biome"
-    ["zizmor"] = "zizmor"
     ["typos"] = "typos"
     ["mise"] = null
     ["tombi"] = "tombi"
     ["tombi_format"] = "tombi"
     ["ryl"] = "github:owenlamont/ryl"
+    ["ryl_format"] = "github:owenlamont/ryl"
     ["hk_pin_sync"] = null
     ["ruff"] = "ruff"
     ["ruff_format"] = "ruff"
@@ -207,8 +203,8 @@ stepTools: Mapping<String, String?> = new Mapping<String, String?> {
     ["selene"] = "aqua:Kampfkarren/selene"
     ["stylua"] = "stylua"
     ["tf_lint"] = "tflint"
-    ["tofu"] = "tofu"
     ["tf_security"] = "trivy"
+    ["tofu"] = "tofu"
     ["tofu_validate"] = "tofu"
     ["renovate_config_validator"] = "npm:renovate"
     ["checkly_preview"] = null
