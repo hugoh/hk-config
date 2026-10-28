@@ -47,7 +47,7 @@ hugoh repo's `hk.pkl` `Common` group: `jactionlint`, `pinact`,
 `check_merge_conflict`, `trailing_whitespace`, `mixed_line_ending`,
 `newlines`, `check_case_conflict`, `check_added_large_files`,
 `check_executables_have_shebangs`, `check_symlinks`, `gitleaks`,
-`ghalint_workflow`, `rumdl`, `rumdl_format`, `biome`, `zizmor`, `typos`,
+`ghalint_workflow`, `rumdl`, `rumdl_format`, `biome`, `typos`,
 `mise`, `tombi`, `tombi_format`, `ryl`, `ryl_format`, `hk_pin_sync`. Keys match
 the `Builtins` identifier they map to, so the step name always tells you which
 builtin is running.
