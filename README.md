@@ -110,33 +110,6 @@ linter, add that tool to the `linters` rule in renovate-config's `default.json`
 (or to the exclusion list in the check script, with a reason). A tool left out
 just stays on the weekly schedule.
 
-## Migrating from v2 to v3
-
-v3 replaces the `actionlint` step with `jactionlint`
-([jdx/jactionlint](https://github.com/jdx/jactionlint), an actionlint fork), so
-it needs hk 2.7.0 or newer. `scripts/migrate-v3.sh [repo-dir]` does the
-consumer-side changes, idempotently: it renames the `actionlint` tool in
-`mise.toml` to `jactionlint` (version from `JACTIONLINT_VERSION`), renames
-`actionlint` step overrides in `hk.pkl` (and rewrites `["key"] = {` steps to
-`["key"] {`, which hk 2.6.0 requires), and moves `.github/actionlint.yaml` to
-`.github/jactionlint.yaml`, adding `profile: default` if the file sets no
-profile. It also bumps the hk pins together (the `hk.pkl` amends/import URLs,
-a literal `min_hk_version`, and `mise.toml`'s `hk =`) to the latest stable hk
-release, or to `HK_VERSION`, leaving a pin that is already newer alone, and
-points the `hk.pkl` hk-config import at the latest v3 release, or at
-`HK_CONFIG_VERSION`. Both lookups use `git ls-remote`; if one finds nothing
-(no v3 hk-config is released yet, or there is no network) it says so and
-leaves that pin. Finally it runs `mise install` and `jactionlint` (through
-`mise exec`, so the pinned version is used) over the workflows and, if that
-finds issues, prints what to change (the `default` profile adds rules
-actionlint never had, such as `concurrency-limits` and
-`excessive-permissions`); that report doesn't change its exit status. The last
-step is `hk check --all` (through `mise exec`, or `HK_BIN`), and the script
-exits with its status, so it only succeeds when the migrated repo passes. The
-script is zsh, so it runs as is on macOS.
-`scripts/check-migrate-v3.sh` (the `migrate-v3` step in `hk.pkl`) runs it over
-throwaway repos.
-
 ## `min_hk_version`
 
 `base.pkl` exports `min_hk_version`, set to the same version as the

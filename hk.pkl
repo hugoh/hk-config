@@ -10,16 +10,6 @@ min_hk_version = Base.min_hk_version
 local linters = new Mapping<String, Step> {
     ...Base.base
     ...Base.shell
-    // migrate-v3.sh is zsh, which none of these parse.
-    ["shellcheck"] = (Base.shell["shellcheck"]) {
-        exclude = List("scripts/migrate-v3.sh")
-    }
-    ["shellharden"] = (Base.shell["shellharden"]) {
-        exclude = List("scripts/migrate-v3.sh")
-    }
-    ["shfmt"] = (Base.shell["shfmt"]) {
-        exclude = List("scripts/migrate-v3.sh")
-    }
     // hk validate only type-checks hk.pkl itself against hk's schema; it
     // doesn't touch the pkl modules this repo actually publishes. This
     // actually builds the package (evaluating base.pkl, verifying
@@ -56,12 +46,6 @@ local linters = new Mapping<String, Step> {
     ["hk-pin-sync"] {
         glob = List("base.pkl", "scripts/check-hk-pin-sync.sh")
         check = "./scripts/check-hk-pin-sync.sh"
-    }
-    // Runs scripts/migrate-v3.sh over throwaway consumer repos (renames,
-    // profile default, idempotence).
-    ["migrate-v3"] {
-        glob = List("scripts/migrate-v3.sh", "scripts/check-migrate-v3.sh")
-        check = "./scripts/check-migrate-v3.sh"
     }
     // renovate.json's custom managers are what lets Renovate read the hk and
     // hk-config pins; if their regexes stop matching, Renovate silently stops
