@@ -1,6 +1,6 @@
 [tools]
 hk = "2.9.0"
-"npm:renovate" = { version = "44.165.2", trust_policy_excludes = ["*"] }
+"npm:renovate" = { version = "44.181.1", trust_policy_excludes = ["*"] }
 pkl = "0.32.2"
 jactionlint = "2.2.0"
 pinact = "5.0.0"
