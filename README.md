@@ -90,7 +90,8 @@ check/pre-commit/pre-push/fix fails with "Variable `commit_msg_file` is not
 defined".
 
 `hk_pin_sync` fails if the consuming repo's `hk.pkl` `amends`/`import` hk pins
-disagree, or if an `hk = "..."` entry in its `mise.toml` differs from the
+disagree, or if an `hk = "..."` (or `hk = { version = "...", ... }`) entry in its
+`mise.toml` differs from the
 `hk.pkl` pin. It does not compare against `min_hk_version` (below): hk itself
 refuses to run when the binary is older, and a newer hk passes, so a new hk
 release landing before hk-config has adopted it doesn't turn CI red;

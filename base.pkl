@@ -14,7 +14,7 @@ local hkPinSync: Config.Step = new Config.Step {
     glob = List("hk.pkl", "mise.toml")
     // One line, ';'-separated, no backslash continuations: hk flattens the
     // command, so a continuation backslash reaches grep as a literal argument.
-    check = "pins=$(grep -Eo 'jdx/hk/releases/download/v[^/]+/hk@[^#]+#' hk.pkl | sed -E 's/.*hk@//; s/#$//' | sort -u); { [ -n \"$pins\" ] && [ \"$(echo \"$pins\" | wc -l)\" -eq 1 ]; } || { echo 'hk.pkl must pin exactly one hk version across amends/import' >&2; exit 1; }; if grep -Eq '^hk *=' mise.toml 2>/dev/null; then grep -Eq \"^hk *= *\\\"$pins\\\"\" mise.toml || { echo \"mise.toml pins an hk version other than hk.pkl's $pins\" >&2; exit 1; }; fi"
+    check = "pins=$(grep -Eo 'jdx/hk/releases/download/v[^/]+/hk@[^#]+#' hk.pkl | sed -E 's/.*hk@//; s/#$//' | sort -u); { [ -n \"$pins\" ] && [ \"$(echo \"$pins\" | wc -l)\" -eq 1 ]; } || { echo 'hk.pkl must pin exactly one hk version across amends/import' >&2; exit 1; }; if grep -Eq '^hk *=' mise.toml 2>/dev/null; then grep -Eq \"^hk *= *(\\\"$pins\\\"|\\{[^}]*version *= *\\\"$pins\\\")\" mise.toml || { echo \"mise.toml pins an hk version other than hk.pkl's $pins\" >&2; exit 1; }; fi"
 }
 
 /// The lowest-common-denominator step set shared by every hugoh repo's
