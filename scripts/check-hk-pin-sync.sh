@@ -13,15 +13,21 @@ trap 'rm -rf "$work"' EXIT
 
 pin() { printf 'package://github.com/jdx/hk/releases/download/v%s/hk@%s#/Config.pkl\n' "$1" "$1"; }
 
-# run_case <name> <expected: pass|fail> <amends pin> <import pin> <mise pin|->
+# run_case <name> <expected: pass|fail> <amends pin> <import pin> <mise pin|-> [table]
 run_case() {
-    local name=$1 expected=$2 amends=$3 import=$4 mise=$5 actual=pass
+    local name=$1 expected=$2 amends=$3 import=$4 mise=$5 form=${6:-string} actual=pass
     rm -rf "${work:?}"/*
     {
         printf 'amends "%s"\n' "$(pin "$amends")"
         printf 'import "%s"\n' "$(pin "$import")"
     } >"$work/hk.pkl"
-    [ "$mise" = "-" ] || printf '[tools]\nhk = "%s"\n' "$mise" >"$work/mise.toml"
+    if [ "$mise" != "-" ]; then
+        if [ "$form" = table ]; then
+            printf '[tools]\nhk = { version = "%s", workflow = "release.yml" }\n' "$mise" >"$work/mise.toml"
+        else
+            printf '[tools]\nhk = "%s"\n' "$mise" >"$work/mise.toml"
+        fi
+    fi
     (cd "$work" && bash -c "$check") >/dev/null 2>&1 || actual=fail
     if [ "$actual" != "$expected" ]; then
         printf 'FAIL %s: expected %s, got %s\n' "$name" "$expected" "$actual" >&2
@@ -37,5 +43,7 @@ run_case "hk behind min" pass 0.0.1 0.0.1 0.0.1
 run_case "amends and import disagree" fail "$min" 99.0.0 "$min"
 run_case "mise.toml differs from hk.pkl" fail 99.0.0 99.0.0 "$min"
 run_case "mise.toml ahead of hk.pkl" fail "$min" "$min" 99.0.0
+run_case "mise.toml table form matches" pass "$min" "$min" "$min" table
+run_case "mise.toml table form differs" fail 99.0.0 99.0.0 "$min" table
 
 exit "$failed"
