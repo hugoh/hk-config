@@ -17,6 +17,7 @@ package {
     "biome.json"
     "mise.toml"
     "README.md"
+    "presets/**"
     "scripts/**"
     "test/**"
   }

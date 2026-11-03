@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Checks that the custom managers in renovate.json still extract the hk and
+// Checks that the custom managers in presets/hk-pins.json still extract the hk and
 // hk-config pins from files shaped like a consumer's hk.pkl / mise.toml.
 //
-// renovate.json only teaches Renovate how to *read* the pins (grouping lives
+// presets/hk-pins.json only teaches Renovate how to *read* the pins (grouping lives
 // in hugoh/renovate-config), so this is the one thing that can silently rot
 // when the pin format changes: the regexes stop matching and Renovate just
 // stops opening hk PRs. Each fixture is run through Renovate's own regex
@@ -19,7 +19,9 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const config = JSON.parse(readFileSync(join(root, "renovate.json"), "utf8"));
+const config = JSON.parse(
+  readFileSync(join(root, "presets", "hk-pins.json"), "utf8"),
+);
 
 function isRenovate(dir) {
   const pkg = join(dir, "package.json");
@@ -145,7 +147,7 @@ for (const [file, minimum] of [
 
 if (failed) {
   console.error(
-    "\nThe custom managers in renovate.json no longer read the hk pins as expected.",
+    "\nThe custom managers in presets/hk-pins.json no longer read the hk pins as expected.",
   );
   process.exit(1);
 }

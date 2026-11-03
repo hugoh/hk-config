@@ -47,17 +47,17 @@ local linters = new Mapping<String, Step> {
         glob = List("base.pkl", "scripts/check-hk-pin-sync.sh")
         check = "./scripts/check-hk-pin-sync.sh"
     }
-    // renovate.json's custom managers are what lets Renovate read the hk and
+    // presets/hk-pins.json's custom managers are what lets Renovate read the hk and
     // hk-config pins; if their regexes stop matching, Renovate silently stops
     // opening hk PRs. This runs them over fixtures shaped like a consumer's
     // hk.pkl / mise.toml (and over this repo's own pins).
     ["renovate-managers"] {
-        glob = List("renovate.json", "scripts/check-renovate-managers.mjs", "test/fixtures/**", "hk.pkl", "base.pkl", "mise.toml")
+        glob = List("presets/hk-pins.json", "scripts/check-renovate-managers.mjs", "test/fixtures/**", "hk.pkl", "base.pkl", "mise.toml")
         check = "node scripts/check-renovate-managers.mjs"
     }
     ...Base.renovate
     ["renovate_config_validator"] = (Base.renovate["renovate_config_validator"]) {
-        glob = List("renovate.json")
+        glob = List("renovate.json", "presets/*.json")
     }
 }
 
