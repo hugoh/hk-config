@@ -1,5 +1,5 @@
 [tools]
-hk = "2.9.0"
+hk = "2.11.0"
 "npm:renovate" = { version = "44.181.1", trust_policy_excludes = ["*"] }
 pkl = "0.32.2"
 jactionlint = "2.2.0"
