@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>hugoh/renovate-config"],
+  "ignorePaths": ["test/fixtures/**"],
   "packageRules": [
     {
       "matchManagers": ["custom.regex"],
