@@ -28,7 +28,7 @@ to, and `A.B.C` is the
 [hk-config release](https://github.com/hugoh/hk-config/releases) you're
 pinning to — check the latest tags rather than hardcoding an example version
 here, since these drift over time and Renovate keeps consuming repos' actual
-pins current (see `renovate.json` below).
+pins current (see Renovate below).
 
 Repos with no local overrides can spread `Base.base` straight into their
 `linters` mapping with nothing else. Repos that already exclude paths,
@@ -125,11 +125,11 @@ module.
 
 ## Renovate
 
-`renovate.json` (in this repo) is where the Renovate rules for keeping the
-`jdx/hk` and `hugoh/hk-config` pins current live — not in the generic
+`presets/hk-pins.json` (in this repo) is where the Renovate rules for keeping
+the `jdx/hk` and `hugoh/hk-config` pins current live — not in the generic
 [`hugoh/renovate-config`](https://github.com/hugoh/renovate-config) fleet
 preset, since these rules encode this repo's own release semantics.
-`renovate-config`'s own preset extends this file, so every repo that already
+`renovate-config`'s `presets/base` extends it, so every repo that already
 extends `renovate-config` picks these rules up transitively with no changes
 of its own. It covers:
 
@@ -140,7 +140,11 @@ of its own. It covers:
   doesn't also open a second, independently-timed PR for the same
   `mise.toml` line.
 
-What this file deliberately does **not** do is group or schedule those bumps:
+This repo's own `renovate.json` is what Renovate reads here (it reads only
+that file, ignoring `.renovaterc.json`). It extends `renovate-config` like any
+other repo and ignores `test/fixtures/`, which are pinned on purpose.
+
+What the preset deliberately does **not** do is group or schedule those bumps:
 that is the extending hub's job. An hk-config release can require a newer hk
 (`min_hk_version`), and fails the consumer's CI until the `jdx/hk` bump lands,
 so both hubs bump the two together, in one PR with one 7-day soak (a shorter
@@ -150,7 +154,8 @@ in its monthly `linters` group (see its README, "The hk pins"), and go-tools in
 its `dev tools` groups. In this repo, hk is part of the project rather than a
 tool it lints with, so it stays in the generic groups.
 
-Checked via the `renovate-config-validator` step in `hk.pkl` on every commit/push.
+Both files are checked via the `renovate_config_validator` step in `hk.pkl`
+on every commit/push.
 The `renovate-managers` step (`scripts/check-renovate-managers.mjs`) goes
 further: it runs the custom managers through Renovate's own regex extractor
 over `test/fixtures/` (shaped like a consumer's `hk.pkl` and `mise.toml`, plus
