@@ -114,6 +114,12 @@ const cases = [
     [hk("2.0.1"), hk("2.0.1"), hk("2.0.1")],
   ],
   ["fixture mise.toml", "mise.toml", fixture("mise.toml"), [hk("2.0.1")]],
+  [
+    "fixture mise.toml (table form)",
+    "mise.toml",
+    fixture("mise-table.toml"),
+    [hk("2.0.1")],
+  ],
 ];
 
 let failed = false;

@@ -1,0 +1,3 @@
+[tools]
+hk = { version = "2.0.1", workflow = "release.yml" }
+hkx = { version = "9.9.9", workflow = "release.yml" }
