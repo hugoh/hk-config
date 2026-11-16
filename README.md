@@ -78,6 +78,9 @@ because they need network access and/or credentials: `renovate`
 (`renovate_config_validator`) and `checkly` (`checkly_preview`) — see the
 doc-comments in `base.pkl` for where it's safe to wire them into hooks.
 
+The `shell` group's `shellcheck` also lints `*.bats` files, which hk's builtin
+misses because a bats file's shebang is `bats`; `shfmt` already covers them.
+
 More group files (e.g. per-language extras) may be added alongside it later —
 `base.pkl` is named for being the foundation those would build on top of, not
 because it's the only file this package will ever contain.
