@@ -72,11 +72,14 @@ text-hygiene steps stay a local override, same as any other repo
 customization.
 
 The per-language opt-in groups, spread in alongside `base`: `python` (`ruff`,
-`ruff_format`, `ty`), `shell` (`shellcheck` — also on `*.bats` —, `shellharden`, `shfmt`), and
+`ruff_format`, `ty`), `shell` (`shellcheck`, `shellharden`, `shfmt`), and
 `lua` (`selene`, `stylua`). Two more are opt-in but not spread automatically
 because they need network access and/or credentials: `renovate`
 (`renovate_config_validator`) and `checkly` (`checkly_preview`) — see the
 doc-comments in `base.pkl` for where it's safe to wire them into hooks.
+
+The `shell` group's `shellcheck` also lints `*.bats` files, which hk's builtin
+misses because a bats file's shebang is `bats`; `shfmt` already covers them.
 
 More group files (e.g. per-language extras) may be added alongside it later —
 `base.pkl` is named for being the foundation those would build on top of, not
