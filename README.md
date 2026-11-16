@@ -72,7 +72,7 @@ text-hygiene steps stay a local override, same as any other repo
 customization.
 
 The per-language opt-in groups, spread in alongside `base`: `python` (`ruff`,
-`ruff_format`, `ty`), `shell` (`shellcheck`, `shellharden`, `shfmt`), and
+`ruff_format`, `ty`), `shell` (`shellcheck` — also on `*.bats` —, `shellharden`, `shfmt`), and
 `lua` (`selene`, `stylua`). Two more are opt-in but not spread automatically
 because they need network access and/or credentials: `renovate`
 (`renovate_config_validator`) and `checkly` (`checkly_preview`) — see the

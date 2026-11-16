@@ -69,8 +69,16 @@ python: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
 /// Shell script repos: shellcheck, shellharden, shfmt. Deliberately doesn't
 /// include ansible-lint (only relevant to the subset of shell repos running
 /// Ansible) or secrets scanning (already in `base` via gitleaks).
+///
+/// `shellcheck` also covers `*.bats`: hk's builtin only matches `*.sh`/`*.bash`
+/// and sh/bash shebangs (a bats file's shebang is `bats`), but shellcheck
+/// parses `@test` natively and flags bats-specific traps such as SC2314 (`!`
+/// does not fail a bats test). `shfmt`'s builtin already matches `*.bats`;
+/// `shellharden` can't parse `@test`, so it is left out.
 shell: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
-    ["shellcheck"] = Builtins.shellcheck
+    ["shellcheck"] = (Builtins.shellcheck) {
+        match_any = (Builtins.shellcheck.match_any) + List(new { glob = List("**/*.bats") })
+    }
     ["shellharden"] = Builtins.shellharden
     ["shfmt"] = Builtins.shfmt
 }
