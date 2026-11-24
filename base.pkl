@@ -1,8 +1,8 @@
-import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.14.0/hk@2.14.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.14.0/hk@2.14.0#/Builtins.pkl"
 
 // Keep in lockstep with the amends/import version above — bump both together.
-min_hk_version = "2.12.0"
+min_hk_version = "2.14.0"
 
 /// Fails when a consuming repo's `hk.pkl` `amends` and `import` pins
 /// disagree, or when a `mise.toml` `hk` pin differs from the `hk.pkl` one.
@@ -55,6 +55,7 @@ base: Mapping<String, Config.Step> = new Mapping<String, Config.Step> {
     ["ryl"] = Builtins.ryl
     ["ryl_format"] = Builtins.ryl_format
     ["hk_pin_sync"] = hkPinSync
+    ["hk_validate"] = Builtins.hk_validate
 }
 
 /// Python repos: ruff (lint + format) and ty (type checking). Spread this in
@@ -202,6 +203,7 @@ stepTools: Mapping<String, String?> = new Mapping<String, String?> {
     ["ryl"] = "github:owenlamont/ryl"
     ["ryl_format"] = "github:owenlamont/ryl"
     ["hk_pin_sync"] = null
+    ["hk_validate"] = null
     ["ruff"] = "ruff"
     ["ruff_format"] = "ruff"
     ["ty"] = "ty"
