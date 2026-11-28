@@ -24,3 +24,10 @@ setup() {
     [ "$status" -eq 1 ]
     [[ $output == *FAIL* ]] || false
 }
+
+@test "fails when hk-config would stop tracking upstream hk" {
+    sed -i.bak 's#"overridePackageName": "jdx/hk"#"overridePackageName": "hugoh/hk-config"#' "$TREE/renovate.json"
+    run node "$TREE/scripts/check-renovate-managers.mjs"
+    [ "$status" -eq 1 ]
+    [[ $output == *"FAIL hk-config tracks upstream hk"* ]] || false
+}

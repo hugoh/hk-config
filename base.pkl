@@ -6,10 +6,10 @@ min_hk_version = "2.14.0"
 
 /// Fails when a consuming repo's `hk.pkl` `amends` and `import` pins
 /// disagree, or when a `mise.toml` `hk` pin differs from the `hk.pkl` one.
-/// It deliberately doesn't compare against `min_hk_version`: hk itself
-/// refuses to run when the binary is older than that, and an hk newer than
-/// this hk-config release was built against is fine. Rides along in `base`,
-/// so it needs no per-repo wiring.
+/// It doesn't compare against `min_hk_version`: from hk 2.13, a consumer
+/// whose hk differs from the one this release was built against fails while
+/// loading its config, before any step runs. Rides along in `base`, so it
+/// needs no per-repo wiring.
 local hkPinSync: Config.Step = new Config.Step {
     glob = List("hk.pkl", "mise.toml")
     // One line, ';'-separated, no backslash continuations: hk flattens the

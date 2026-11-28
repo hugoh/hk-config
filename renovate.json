@@ -4,6 +4,13 @@
   "ignorePaths": ["test/fixtures/**"],
   "packageRules": [
     {
+      "description": "This repo is where hk upgrades start, so it follows upstream rather than its own hk-v releases.",
+      "matchDepNames": ["jdx/hk"],
+      "overrideDatasource": "github-releases",
+      "overridePackageName": "jdx/hk",
+      "extractVersion": "^v?(?<version>.*)$"
+    },
+    {
       "matchManagers": ["custom.regex"],
       "matchPackageNames": ["jdx/hk", "hugoh/hk-config"],
       "semanticCommitType": "fix"

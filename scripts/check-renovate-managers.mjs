@@ -73,7 +73,7 @@ const extractPackageFile =
   mod.extractPackageFile ?? mod.default?.extractPackageFile;
 
 // Every dependency the managers extract from `content`, as sorted
-// "package@version (datasource)" strings.
+// "dep@version from package/extractVersion (datasource)" strings.
 async function extract(file, content) {
   const found = [];
   for (const manager of config.customManagers) {
@@ -83,16 +83,21 @@ async function extract(file, content) {
     if (!applies) continue;
     const result = await extractPackageFile(content, file, manager);
     for (const dep of result?.deps ?? []) {
+      const name = dep.packageName ?? dep.depName;
       found.push(
-        `${dep.packageName ?? dep.depName}@${dep.currentValue} (${dep.datasource})`,
+        `${dep.depName ?? name}@${dep.currentValue} from ${name}/${dep.extractVersion} (${dep.datasource})`,
       );
     }
   }
   return found.sort();
 }
 
-const hk = (v) => `jdx/hk@${v} (github-releases)`;
-const hkConfig = (v) => `hugoh/hk-config@${v} (github-tags)`;
+// Consumers are only offered an hk that an hk-config release advertises as an
+// hk-vX.Y.Z release; from hk 2.13 any other pairing fails to load.
+const hk = (v) =>
+  `jdx/hk@${v} from hugoh/hk-config/^hk-v(?<version>.*)$ (github-releases)`;
+const hkConfig = (v) =>
+  `hugoh/hk-config@${v} from hugoh/hk-config/^v(?<version>.*)$ (github-tags)`;
 
 const fixture = (name) =>
   readFileSync(join(root, "test", "fixtures", name), "utf8");
@@ -155,5 +160,31 @@ if (failed) {
   console.error(
     "\nThe custom managers in presets/hk-pins.json no longer read the hk pins as expected.",
   );
+  process.exit(1);
+}
+
+// hk-config itself must follow upstream hk, or no new hk is ever advertised.
+// Run the preset's and this repo's rules through Renovate's own rule engine.
+const rules = await import(
+  join(findRenovate(), "dist", "util", "package-rules", "index.js")
+);
+const own = JSON.parse(readFileSync(join(root, "renovate.json"), "utf8"));
+const [dep] = (
+  await Promise.all(
+    config.customManagers.map((m) =>
+      extractPackageFile(fixture("mise.toml"), "mise.toml", m),
+    ),
+  )
+).flatMap((result) => result?.deps ?? []);
+const resolved = await rules.applyPackageRules({
+  ...dep,
+  manager: "custom.regex",
+  packageRules: [...config.packageRules, ...own.packageRules],
+});
+const upstream = `${resolved.packageName}/${resolved.extractVersion} (${resolved.datasource})`;
+const wanted = "jdx/hk/^v?(?<version>.*)$ (github-releases)";
+console.log(`${upstream === wanted ? "ok  " : "FAIL"} hk-config tracks upstream hk`);
+if (upstream !== wanted) {
+  console.error(`     expected: ${wanted}\n     got:      ${upstream}`);
   process.exit(1);
 }

@@ -8,5 +8,5 @@ copy_tree() {
     mkdir -p "$TREE/test"
     cp -R "$root/scripts" "$root/presets" "$TREE/"
     cp -R "$root/test/fixtures" "$TREE/test/"
-    cp "$root/base.pkl" "$root/hk.pkl" "$root/mise.toml" "$root/README.md" "$TREE/"
+    cp "$root/base.pkl" "$root/hk.pkl" "$root/mise.toml" "$root/README.md" "$root/renovate.json" "$TREE/"
 }

@@ -16,7 +16,7 @@
     },
     {
       "customType": "regex",
-      "description": "Bump the jdx/hk pin in package:// URLs (.pkl) and mise.toml together",
+      "description": "Bump the jdx/hk pin in package:// URLs (.pkl) and mise.toml together, only to versions an hk-config release advertises as hk-vX.Y.Z",
       "managerFilePatterns": ["/\\.pkl$/", "/(^|/)mise\\.toml$/"],
       "matchStrings": [
         "package://github\\.com/jdx/hk/releases/download/v[^/]+/hk@(?<currentValue>[^#]+)#",
@@ -25,8 +25,9 @@
         "min_hk_version\\s*=\\s*\"(?<currentValue>[^\"]+)\""
       ],
       "datasourceTemplate": "github-releases",
-      "packageNameTemplate": "jdx/hk",
-      "extractVersionTemplate": "^v?(?<version>.*)$",
+      "depNameTemplate": "jdx/hk",
+      "packageNameTemplate": "hugoh/hk-config",
+      "extractVersionTemplate": "^hk-v(?<version>.*)$",
       "versioningTemplate": "semver"
     }
   ],
