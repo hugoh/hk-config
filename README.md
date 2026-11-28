@@ -14,9 +14,12 @@ import "package://github.com/hugoh/hk-config/releases/download/vA.B.C/hk-config@
 
 min_hk_version = Base.min_hk_version
 
-local linters = new Mapping<String, Step> {
+local common = new Mapping<String, Step> {
     ...Base.base
-    // repo-specific overrides and additions go here, same as before
+}
+
+local linters = (common) {
+    // repo-specific overrides and additions go here
     ["trailing_whitespace"] = (Builtins.trailing_whitespace) {
         exclude = List("some/generated/dir/**")
     }
@@ -29,6 +32,9 @@ to, and `A.B.C` is the
 pinning to — check the latest tags rather than hardcoding an example version
 here, since these drift over time and Renovate keeps consuming repos' actual
 pins current (see Renovate below).
+
+Spread the shared groups first and amend the result: from hk 2.13, overriding
+a spread key in the same block is a `Duplicate definition` error.
 
 Repos with no local overrides can spread `Base.base` straight into their
 `linters` mapping with nothing else. Repos that already exclude paths,
@@ -96,10 +102,10 @@ defined".
 `hk_pin_sync` fails if the consuming repo's `hk.pkl` `amends`/`import` hk pins
 disagree, or if an `hk = "..."` (or `hk = { version = "...", ... }`) entry in its
 `mise.toml` differs from the
-`hk.pkl` pin. It does not compare against `min_hk_version` (below): hk itself
-refuses to run when the binary is older, and a newer hk passes, so a new hk
-release landing before hk-config has adopted it doesn't turn CI red;
-hk-config only needs a release when it needs a newer hk.
+`hk.pkl` pin. It does not compare against `min_hk_version` (below): from hk
+2.13 a consumer on any other hk version fails while loading its config, before
+a step could report it. Every hk upgrade therefore needs an hk-config release
+(see Renovate below).
 `scripts/check-hk-pin-sync.sh` (the `hk-pin-sync` step in `hk.pkl`) exercises
 the check against throwaway consumer repos.
 
@@ -133,20 +139,24 @@ of its own. It covers:
 
 - Bumping the `hugoh/hk-config` pin in `.pkl` files (as before).
 - Bumping the `jdx/hk` pin in both `.pkl` files and `mise.toml`'s
-  `hk = "..."` entry together.
+  `hk = "..."` entry together, but only to a version hk-config supports: it
+  reads this repo's `hk-vX.Y.Z` releases, not hk's own. CI's `hk-release` job
+  (`scripts/publish-hk-release.sh`) creates one for the hk version of the
+  newest `vA.B.C` release.
 - Disabling Renovate's built-in `mise` manager for `hk` specifically, so it
   doesn't also open a second, independently-timed PR for the same
   `mise.toml` line.
 
 This repo's own `renovate.json` is what Renovate reads here (it reads only
 that file, ignoring `.renovaterc.json`). It extends `renovate-config` like any
-other repo and ignores `test/fixtures/`, which are pinned on purpose.
+other repo and ignores `test/fixtures/`, which are pinned on purpose. It
+overrides the preset to follow upstream `jdx/hk`, since hk upgrades start
+here.
 
 What the preset deliberately does **not** do is group or schedule those bumps:
-that is the extending hub's job. An hk-config release can require a newer hk
-(`min_hk_version`), and fails the consumer's CI until the `jdx/hk` bump lands,
-so both hubs bump the two together, in one PR with one 7-day soak (a shorter
-hk-config soak would let it mature before the hk it needs):
+that is the extending hub's job. The two pins must move together, so both
+hubs bump them in one PR with one 7-day soak (an `hk-v` release appears right
+after the hk-config release it describes, so the two mature together):
 [`renovate-config`](https://github.com/hugoh/renovate-config)'s `default.json`
 in its weekly `hk` group (see its README, "The hk pins"), and go-tools in
 its `dev tools` groups. In this repo, hk is part of the project rather than a

@@ -54,3 +54,18 @@ jobs:
     with:
       package-command: pkl project package --output-path dist
       package-artifacts: dist/*
+
+  hk-release:
+    needs: release
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - run: ./scripts/publish-hk-release.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
